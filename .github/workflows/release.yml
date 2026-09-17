@@ -144,26 +144,59 @@ jobs:
                   SHORT="https://yomito.foo.ng/download/"
                   echo "url=$SHORT" >> $GITHUB_OUTPUT
 
-            # 💬 DISCORD EMBED
+                       # 💬 DISCORD RELEASE NOTIFICATION
+                       
             - name: Discord Notify
               if: ${{ github.event.inputs.notify_discord == 'true' && success() }}
               run: |
+                  if [ "${{ github.event.inputs.type }}" = "nightly" ]; then
+                    MENTION=""
+                    FOOTER="Nightly"
+                  else
+                    MENTION="<@&$DISCORD_ROLE_ID>"
+                    FOOTER="Stable release"
+                  fi
+
                   curl -X POST "$DISCORD_RELEASE_WEBHOOK" \
-                  -H "Content-Type: application/json" \
-                  -d "{
-                    \"embeds\": [{
-                      \"title\": \"${{ steps.info.outputs.notif_title }}\",
-                      \"fields\": [
-                        {\"name\": \"Versi\", \"value\": \"${{ steps.info.outputs.version }}\", \"inline\": true},
-                        {\"name\": \"Ukuran\", \"value\": \"${{ steps.apk.outputs.size }}\", \"inline\": true},
-                        {\"name\": \"Update\", \"value\": \"${{ steps.apk.outputs.date }}\", \"inline\": false},
-                        {\"name\": \"Changelog\", \"value\": \"${{ steps.desc.outputs.json_safe }}\", \"inline\": false}
+                    -H "Content-Type: application/json" \
+                    -d @- <<EOF
+                  {
+                    "content": "$MENTION",
+                    "embeds": [{
+                      "title": "${{ steps.info.outputs.notif_title }}",
+                      "url": "https://github.com/${{ steps.info.outputs.target_repo }}/releases/tag/${{ steps.info.outputs.tag }}",
+                      "description": "${{ steps.desc.outputs.json_safe }}",
+                      "color": 3447003,
+                      "author": {
+                        "name": "${{ github.actor }}",
+                        "icon_url": "https://github.com/${{ github.actor }}.png"
+                      },
+                      "fields": [
+                        {
+                          "name": "📦 Versi",
+                          "value": "${{ steps.info.outputs.version }}",
+                          "inline": true
+                        },
+                        {
+                          "name": "📏 Ukuran",
+                          "value": "${{ steps.apk.outputs.size }}",
+                          "inline": true
+                        },
+                        {
+                          "name": "🕒 Update",
+                          "value": "${{ steps.apk.outputs.date }}",
+                          "inline": false
+                        }
                       ],
-                      \"url\": \"${{ steps.short.outputs.url }}\"
+                      "footer": {
+                        "text": "$FOOTER"
+                      }
                     }]
-                  }"
+                  }
+                  EOF
               env:
                   DISCORD_RELEASE_WEBHOOK: ${{ secrets.DISCORD_RELEASE_WEBHOOK }}
+                  DISCORD_ROLE_ID: ${{ secrets.DISCORD_ROLE_ID }}
 
             # 📲 WHATSAPP (FONNTE)
             - name: WhatsApp Notify
