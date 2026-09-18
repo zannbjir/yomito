@@ -80,7 +80,8 @@ const val DATABASE_VERSION = 28
 		MangaEntity::class, TagEntity::class, HistoryEntity::class, MangaTagsEntity::class, ChapterEntity::class,
 		FavouriteCategoryEntity::class, FavouriteEntity::class, MangaPrefsEntity::class, TrackEntity::class,
 		TrackLogEntity::class, SuggestionEntity::class, BookmarkEntity::class, ScrobblingEntity::class,
-		MangaSourceEntity::class, StatsEntity::class, LocalMangaIndexEntity::class, SourcePresetEntity::class,
+		MangaSourceEntity::class, StatsEntity::class, LocalMangaIndexEntity::class,
+		SourcePresetEntity::class,
 	],
 	version = DATABASE_VERSION,
 )

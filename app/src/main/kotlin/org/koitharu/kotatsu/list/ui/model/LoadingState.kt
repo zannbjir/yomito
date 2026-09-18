@@ -2,7 +2,7 @@ package org.koitharu.kotatsu.list.ui.model
 
 import androidx.annotation.StringRes
 
-	data class LoadingState(
+data class LoadingState(
 	@StringRes val textResId: Int = 0,
 ) : ListModel {
 

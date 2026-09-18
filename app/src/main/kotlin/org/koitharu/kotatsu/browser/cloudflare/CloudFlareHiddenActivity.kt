@@ -3,7 +3,7 @@ package org.koitharu.kotatsu.browser.cloudflare
 import dagger.hilt.android.AndroidEntryPoint
 
 /**
-* Automatic Cloudflare resolver that remains focused and rendered behind a translucent window.
+ * Automatic Cloudflare resolver that remains focused and rendered behind a translucent window.
  */
 @AndroidEntryPoint
 class CloudFlareHiddenActivity : CloudFlareActivity() {

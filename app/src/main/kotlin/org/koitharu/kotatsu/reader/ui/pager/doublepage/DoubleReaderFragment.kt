@@ -127,13 +127,11 @@ open class DoubleReaderFragment : BaseReaderFragment<FragmentReaderDoubleBinding
 	)
 
 	override fun onZoomIn() {
-		(viewBinding ?: return).recyclerView.visiblePageHolders()
-			viewBinding?.frame?.onZoomIn()
+		viewBinding?.frame?.onZoomIn()
 	}
 
 	override fun onZoomOut() {
-		(viewBinding ?: return).recyclerView.visiblePageHolders()
-			viewBinding?.frame?.onZoomOut()
+		viewBinding?.frame?.onZoomOut()
 	}
 
 	override fun switchPageBy(delta: Int) {

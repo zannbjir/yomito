@@ -45,6 +45,7 @@
 
             <com.google.android.material.button.MaterialSplitButton
                 android:id="@+id/split_button_read"
+                style="?attr/detailsReadSplitButtonStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="end|center_vertical"
@@ -53,15 +54,14 @@
 
                 <Button
                     android:id="@+id/button_read"
-                    style="?materialSplitButtonLeadingFilledStyle"
+                    style="?attr/detailsReadLeadingButtonStyle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:minWidth="@dimen/read_button_min_width"
                     android:text="@string/read" />
 
                 <Button
                     android:id="@+id/button_read_menu"
-                    style="?materialSplitButtonIconFilledStyle"
+                    style="?attr/detailsReadMenuButtonStyle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:contentDescription="@string/show_menu"

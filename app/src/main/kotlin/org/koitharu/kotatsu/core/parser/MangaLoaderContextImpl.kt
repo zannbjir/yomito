@@ -13,6 +13,7 @@ import okhttp3.OkHttpClient
 import okhttp3.Response
 import okhttp3.ResponseBody.Companion.asResponseBody
 import okio.Buffer
+import org.koitharu.kotatsu.core.exceptions.CloudFlareProtectedException
 import org.koitharu.kotatsu.core.exceptions.InteractiveActionRequiredException
 import org.koitharu.kotatsu.core.image.BitmapDecoderCompat
 import org.koitharu.kotatsu.core.network.MangaHttpClient
@@ -26,6 +27,7 @@ import org.koitharu.kotatsu.parsers.MangaLoaderContext
 import org.koitharu.kotatsu.parsers.MangaParser
 import org.koitharu.kotatsu.parsers.bitmap.Bitmap
 import org.koitharu.kotatsu.parsers.config.MangaSourceConfig
+import org.koitharu.kotatsu.parsers.model.MangaParserSource
 import org.koitharu.kotatsu.parsers.model.MangaSource
 import org.koitharu.kotatsu.core.network.webview.WebViewRequestInterceptorExecutor
 import org.koitharu.kotatsu.parsers.webview.InterceptedRequest
@@ -78,7 +80,12 @@ class MangaLoaderContextImpl @Inject constructor(
     override fun requestBrowserAction(
         parser: MangaParser,
         url: String,
-    ): Nothing = throw InteractiveActionRequiredException(parser.source, url)
+    ): Nothing {
+        if (parser.source == MangaParserSource.COMIX) {
+            throw CloudFlareProtectedException(url, parser.source, parser.getRequestHeaders())
+        }
+        throw InteractiveActionRequiredException(parser.source, url)
+    }
 
     override fun redrawImageResponse(response: Response, redraw: (image: Bitmap) -> Bitmap): Response {
         return response.map { body ->
@@ -190,13 +197,6 @@ class MangaLoaderContextImpl @Inject constructor(
         timeout: Long
     ): List<String> {
         return webViewRequestInterceptorExecutor.captureWebViewUrls(pageUrl, urlPattern, timeout)
-    }
-
-    override suspend fun extractVrfToken(
-        pageUrl: String,
-        timeout: Long
-    ): String? {
-        return webViewRequestInterceptorExecutor.extractVrfToken(pageUrl, timeout)
     }
 
     private fun obtainWebViewUserAgent(): String {

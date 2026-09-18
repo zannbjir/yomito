@@ -80,8 +80,6 @@ class DoublePageHolder(
 				minScale,
 				PointF(sWidth / 2f, sHeight / 2f),
 			)
-
-			// Shift pages toward each other so they sit side by side
 			if (sWidth.toFloat() / sHeight > WIDE_IMAGE_RATIO) {
 				// Wide/landscape image: scale to fit entirely within the full screen
 				val containerWidth = width.toFloat()

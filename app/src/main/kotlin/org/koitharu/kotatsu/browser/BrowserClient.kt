@@ -4,7 +4,6 @@ import android.graphics.Bitmap
 import android.webkit.WebView
 import android.webkit.WebViewClient
 
-
 open class BrowserClient(
 	private val callback: BrowserCallback,
 ) : WebViewClient() {

@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+	<plurals name="search_results_count">
+		<item quantity="one">%1$d résultat</item>
+		<item quantity="many">%1$d résultats</item>
+		<item quantity="other">%1$d résultats</item>
+	</plurals>
     <plurals name="minutes_ago">
         <item quantity="one">Il y a %1$d minute</item>
         <item quantity="many">Il y a %1$d minutes</item>

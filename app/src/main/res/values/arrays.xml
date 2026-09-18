@@ -110,9 +110,11 @@
 		<item>@string/chapters_read</item>
 		<item>@string/chapters_left</item>
 	</string-array>
+	<!-- Order must match TrackerDownloadStrategy: entryValues come from its enum entries. -->
 	<string-array name="tracker_download_strategies" translatable="false">
 		<item>@string/never</item>
 		<item>@string/manga_with_downloaded_chapters</item>
+		<item>@string/recently_read_manga</item>
 	</string-array>
 	<string-array name="metered_network_options" translatable="false">
 		<item>@string/allow_always</item>
@@ -134,6 +136,7 @@
 		<item>@string/save_page</item>
 		<item>@string/automatic_scroll</item>
 		<item>@string/bookmark_add</item>
+		<item>@string/community_comments</item>
 	</string-array>
 	<string-array name="list_badges" translatable="false">
 		<item>@string/favourites</item>

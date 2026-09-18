@@ -1,62 +1,72 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<com.google.android.material.card.MaterialCardView
 	xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:app="http://schemas.android.com/apk/res-auto"
 	xmlns:tools="http://schemas.android.com/tools"
+	style="?attr/detailsChapterListItemStyle"
 	android:layout_width="match_parent"
-	android:layout_height="?attr/listPreferredItemHeight"
-	android:background="@drawable/list_selector"
-	android:baselineAligned="false"
-	android:gravity="center_vertical"
-	android:minHeight="@dimen/chapter_list_item_height"
-	android:orientation="horizontal">
+	android:layout_height="wrap_content"
+	android:layout_marginHorizontal="?attr/detailsChapterItemMarginHorizontal"
+	android:layout_marginVertical="?attr/detailsChapterItemMarginVertical">
 
 	<LinearLayout
-		android:layout_width="0dp"
-		android:layout_height="wrap_content"
-		android:layout_marginVertical="8dp"
-		android:layout_marginStart="?android:listPreferredItemPaddingStart"
-		android:layout_marginEnd="?android:listPreferredItemPaddingEnd"
-		android:layout_weight="1"
-		android:orientation="vertical">
+		android:layout_width="match_parent"
+		android:layout_height="?attr/listPreferredItemHeight"
+		android:baselineAligned="false"
+		android:gravity="center_vertical"
+		android:minHeight="@dimen/chapter_list_item_height"
+		android:orientation="horizontal">
 
-		<TextView
-			android:id="@+id/textView_title"
-			android:layout_width="match_parent"
+		<LinearLayout
+			android:layout_width="0dp"
 			android:layout_height="wrap_content"
-			android:drawablePadding="8dp"
-			android:ellipsize="end"
-			android:singleLine="true"
-			android:textAppearance="?attr/textAppearanceBodyLarge"
-			tools:text="@tools:sample/lorem[15]"
-			tools:textColor="?android:textColorPrimary" />
+			android:layout_marginStart="?android:listPreferredItemPaddingStart"
+			android:layout_marginEnd="?android:listPreferredItemPaddingEnd"
+			android:layout_marginVertical="8dp"
+			android:layout_weight="1"
+			android:orientation="vertical">
 
-		<TextView
-			android:id="@+id/textView_description"
-			android:layout_width="match_parent"
-			android:layout_height="wrap_content"
-			android:layout_marginTop="2dp"
-			android:ellipsize="end"
-			android:singleLine="true"
-			android:textAppearance="?attr/textAppearanceBodySmall"
-			tools:text="05.10.2021 • Scanlator"
-			tools:textColor="?android:textColorTertiary" />
+			<TextView
+				android:id="@+id/textView_title"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:drawablePadding="8dp"
+				android:ellipsize="end"
+				android:singleLine="true"
+				android:textAppearance="?attr/detailsChapterTitleTextAppearance"
+				tools:text="@tools:sample/lorem[15]"
+				tools:textColor="?android:textColorPrimary" />
+
+			<TextView
+				android:id="@+id/textView_description"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:layout_marginTop="2dp"
+				android:ellipsize="end"
+				android:singleLine="true"
+				android:textAppearance="?attr/detailsChapterSupportingTextAppearance"
+				tools:text="05.10.2021 • Scanlator"
+				tools:textColor="?android:textColorTertiary" />
+		</LinearLayout>
+
+		<ImageView
+			android:id="@+id/imageView_new"
+			style="?attr/detailsChapterNewIndicatorStyle"
+			android:contentDescription="@string/new_chapters"
+			app:srcCompat="@drawable/ic_new" />
+
+		<ImageView
+			android:id="@+id/imageView_bookmarked"
+			style="?attr/detailsChapterBookmarkIconStyle"
+			android:contentDescription="@string/bookmarks"
+			app:srcCompat="@drawable/ic_bookmark" />
+
+		<ImageView
+			android:id="@+id/imageView_downloaded"
+			style="?attr/detailsChapterDownloadIconStyle"
+			android:contentDescription="@string/downloaded"
+			app:srcCompat="@drawable/ic_storage" />
+
 	</LinearLayout>
 
-	<ImageView
-		android:id="@+id/imageView_bookmarked"
-		android:layout_width="wrap_content"
-		android:layout_height="wrap_content"
-		android:layout_marginEnd="?android:listPreferredItemPaddingEnd"
-		android:contentDescription="@string/bookmarks"
-		app:srcCompat="@drawable/ic_bookmark" />
-
-	<ImageView
-		android:id="@+id/imageView_downloaded"
-		android:layout_width="wrap_content"
-		android:layout_height="wrap_content"
-		android:layout_marginEnd="?android:listPreferredItemPaddingEnd"
-		android:contentDescription="@string/downloaded"
-		app:srcCompat="@drawable/ic_storage" />
-
-</LinearLayout>
+</com.google.android.material.card.MaterialCardView>

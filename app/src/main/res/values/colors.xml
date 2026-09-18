@@ -21,6 +21,18 @@
 	<color name="launcher_background">#FFFFFF</color>
 	<color name="common_green">#388E3C</color>
 	<color name="common_red">#D32F2F</color>
+
+	<!-- Fixed phone-style Settings icon colors. These intentionally do not follow the Material
+	     palette: each section keeps its own recognizable color in Expressive appearance. -->
+	<color name="settings_icon_appearance">#7E57C2</color>
+	<color name="settings_icon_sources">#00875A</color>
+	<color name="settings_icon_reader">#EF6C00</color>
+	<color name="settings_icon_network">#1976D2</color>
+	<color name="settings_icon_downloads">#00838F</color>
+	<color name="settings_icon_tracker">#D32F2F</color>
+	<color name="settings_icon_services">#3F51B5</color>
+	<color name="settings_icon_backup">#00796B</color>
+	<color name="settings_icon_about">#546E7A</color>
 	<color name="common_yellow">#FBC02D</color>
 	<color name="nsfw_18">#FF8A65</color>
 	<color name="nsfw_16">#FFD54F</color>
@@ -33,7 +45,10 @@
 	<color name="background_sakura">#FFF8F8</color>
 	<color name="background_mamimi">#FFF8F7</color>
 	<color name="background_kanade">#F3F3F3</color>
+	<!-- The popular-source flame: fire orange in both themes, readable on light and dark surfaces. -->
+	<color name="hot_source_flame">#FF6D00</color>
 
     <!-- Panorama cover scrim -->
     <color name="scrim_panorama">#66000000</color>
+
 </resources>

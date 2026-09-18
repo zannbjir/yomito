@@ -2,10 +2,10 @@ package org.koitharu.kotatsu.details.ui
 
 import android.app.assist.AssistContent
 import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.BlurMaskFilter
-import android.graphics.Canvas
-import android.graphics.Paint
+import android.graphics.Color
+import android.graphics.RenderEffect
+import android.graphics.Shader
+import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.os.Bundle
 import android.renderscript.Allocation
@@ -20,6 +20,7 @@ import android.view.ViewTreeObserver
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.activity.viewModels
+import androidx.core.graphics.ColorUtils
 import androidx.core.text.buildSpannedString
 import androidx.core.text.inSpans
 import androidx.core.text.method.LinkMovementMethodCompat
@@ -38,7 +39,7 @@ import coil3.request.crossfade
 import coil3.request.lifecycle
 import coil3.request.transformations
 import coil3.size.Precision
-import coil3.toBitmap
+import coil3.target.ImageViewTarget
 import coil3.transform.RoundedCornersTransformation
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.chip.Chip
@@ -81,6 +82,7 @@ import org.koitharu.kotatsu.core.util.ext.copyToClipboard
 import org.koitharu.kotatsu.core.util.ext.drawableStart
 import org.koitharu.kotatsu.core.util.ext.end
 import org.koitharu.kotatsu.core.util.ext.enqueueWith
+import org.koitharu.kotatsu.core.util.ext.getThemeColor
 import org.koitharu.kotatsu.core.util.ext.getQuantityStringSafe
 import org.koitharu.kotatsu.core.util.ext.isAnimationsEnabled
 import org.koitharu.kotatsu.core.util.ext.isTextTruncated
@@ -120,6 +122,14 @@ import org.koitharu.kotatsu.scrobbling.common.domain.model.ScrobblingInfo
 import javax.inject.Inject
 import kotlin.math.roundToInt
 import com.google.android.material.R as materialR
+import org.koitharu.kotatsu.sourcescore.ui.CommunityCommentsSheet
+import org.koitharu.kotatsu.sourcescore.ui.CommunityRatingDelegate
+import org.koitharu.kotatsu.sourcescore.ui.StarRowBinder
+import androidx.lifecycle.lifecycleScope
+import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.launch
+import org.koitharu.kotatsu.sourcescore.data.RatingResponse
+import java.util.Locale
 
 @AndroidEntryPoint
 class DetailsActivity :
@@ -133,8 +143,11 @@ class DetailsActivity :
     AuthorSpan.OnAuthorClickListener,
     BottomSheetOwner {
 
-    @Inject
-    lateinit var shortcutManager: AppShortcutManager
+	@Inject
+	lateinit var communityRating: CommunityRatingDelegate
+
+	@Inject
+	lateinit var shortcutManager: AppShortcutManager
 
     @Inject
     lateinit var coil: ImageLoader
@@ -149,73 +162,75 @@ class DetailsActivity :
     override val bottomSheet: View?
         get() = viewBinding.containerBottomSheet
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(ActivityDetailsBinding.inflate(layoutInflater))
-        infoBinding = LayoutDetailsTableBinding.bind(viewBinding.root)
-        setDisplayHomeAsUp(isEnabled = true, showUpAsClose = false)
-        supportActionBar?.setDisplayShowTitleEnabled(false)
-        viewBinding.chipFavorite.setOnClickListener(this)
-        infoBinding.textViewLocal.setOnClickListener(this)
-        infoBinding.textViewSource.setOnClickListener(this)
-        viewBinding.imageViewCover.setOnClickListener(this)
-        viewBinding.textViewTitle.setOnClickListener(this)
-        viewBinding.buttonDescriptionMore.setOnClickListener(this)
-        viewBinding.buttonScrobblingMore.setOnClickListener(this)
-        viewBinding.buttonRelatedMore.setOnClickListener(this)
-        viewBinding.textViewDescription.addOnLayoutChangeListener(this)
-        viewBinding.swipeRefreshLayout.setOnRefreshListener(this)
-        viewBinding.textViewDescription.viewTreeObserver.addOnDrawListener(this)
-        infoBinding.textViewAuthor.movementMethod = LinkMovementMethodCompat.getInstance()
-        viewBinding.textViewDescription.movementMethod = LinkMovementMethodCompat.getInstance()
-        viewBinding.chipsTags.onChipClickListener = this
-        TitleScrollCoordinator(viewBinding.textViewTitle).attach(viewBinding.scrollView)
-        if (settings.isDescriptionExpanded) {
-            viewBinding.textViewDescription.maxLines = Int.MAX_VALUE - 1
-        }
-        viewBinding.containerBottomSheet?.let { sheet ->
-            sheet.setOnClickListener(this)
-            sheet.addOnLayoutChangeListener(this)
-            onBackPressedDispatcher.addCallback(BottomSheetCollapseCallback(sheet))
-            BottomSheetBehavior.from(sheet).addBottomSheetCallback(
-                DetailsBottomSheetCallback(viewBinding.swipeRefreshLayout, checkNotNull(viewBinding.navbarDim)),
-            )
-        }
+	override fun onCreate(savedInstanceState: Bundle?) {
+		super.onCreate(savedInstanceState)
+		setContentView(ActivityDetailsBinding.inflate(layoutInflater))
+		infoBinding = LayoutDetailsTableBinding.bind(viewBinding.root)
+		configureTransparentAppBar()
+		setDisplayHomeAsUp(isEnabled = true, showUpAsClose = false)
+		supportActionBar?.setDisplayShowTitleEnabled(false)
+		viewBinding.chipFavorite.setOnClickListener(this)
+		infoBinding.textViewLocal.setOnClickListener(this)
+		infoBinding.textViewSource.setOnClickListener(this)
+		viewBinding.imageViewCover.setOnClickListener(this)
+		viewBinding.textViewTitle.setOnClickListener(this)
+		viewBinding.buttonDescriptionMore.setOnClickListener(this)
+		viewBinding.buttonScrobblingMore.setOnClickListener(this)
+		viewBinding.buttonRelatedMore.setOnClickListener(this)
+		viewBinding.textViewDescription.addOnLayoutChangeListener(this)
+		viewBinding.swipeRefreshLayout.setOnRefreshListener(this)
+		viewBinding.textViewDescription.viewTreeObserver.addOnDrawListener(this)
+		infoBinding.textViewAuthor.movementMethod = LinkMovementMethodCompat.getInstance()
+		viewBinding.textViewDescription.movementMethod = LinkMovementMethodCompat.getInstance()
+		viewBinding.chipsTags.onChipClickListener = this
+		TitleScrollCoordinator(viewBinding.textViewTitle).attach(viewBinding.scrollView)
+		if (settings.isDescriptionExpanded) {
+			viewBinding.textViewDescription.maxLines = Int.MAX_VALUE - 1
+		}
+		viewBinding.containerBottomSheet?.let { sheet ->
+			sheet.setOnClickListener(this)
+			sheet.addOnLayoutChangeListener(this)
+			onBackPressedDispatcher.addCallback(BottomSheetCollapseCallback(sheet))
+			BottomSheetBehavior.from(sheet).addBottomSheetCallback(
+				DetailsBottomSheetCallback(viewBinding.swipeRefreshLayout, checkNotNull(viewBinding.navbarDim)),
+			)
+		}
 
-        val appRouter = router
-        viewModel.mangaDetails.filterNotNull().observe(this, ::onMangaUpdated)
-        viewModel.coverUrl.observe(this, ::loadCover)
-        viewModel.onMangaRemoved.observeEvent(this, ::onMangaRemoved)
-        viewModel.onError
-            .filterNot { appRouter.isChapterPagesSheetShown() }
-            .observeEvent(this, DetailsErrorObserver(this, viewModel, exceptionResolver))
-        viewModel.onActionDone
-            .filterNot { appRouter.isChapterPagesSheetShown() }
-            .observeEvent(this, ReversibleActionObserver(viewBinding.scrollView))
-        combine(viewModel.historyInfo, viewModel.isLoading, ::Pair).observe(this) {
-            onHistoryChanged(it.first, it.second)
-        }
-        viewModel.isLoading.observe(this, ::onLoadingStateChanged)
-        viewModel.scrobblingInfo.observe(this, ::onScrobblingInfoChanged)
-        viewModel.localSize.observe(this, ::onLocalSizeChanged)
-        viewModel.relatedManga.observe(this, ::onRelatedMangaChanged)
-        viewModel.favouriteCategories.observe(this, ::onFavoritesChanged)
-        val menuInvalidator = MenuInvalidator(this)
-        viewModel.isStatsAvailable.observe(this, menuInvalidator)
-        viewModel.remoteManga.observe(this, menuInvalidator)
-        viewModel.tags.observe(this, ::onTagsChanged)
-        viewModel.chapters.observe(this, PrefetchObserver(this))
-        viewModel.onDownloadStarted
-            .filterNot { appRouter.isChapterPagesSheetShown() }
-            .observeEvent(this, DownloadStartedObserver(viewBinding.scrollView))
-        menuProvider = DetailsMenuProvider(
-            activity = this,
-            viewModel = viewModel,
-            snackbarHost = viewBinding.scrollView,
-            appShortcutManager = shortcutManager,
-        )
-        addMenuProvider(menuProvider)
-    }
+		val appRouter = router
+		viewModel.mangaDetails.filterNotNull().observe(this, ::onMangaUpdated)
+		viewModel.mangaDetails.filterNotNull().observe(this) { bindCommunityRating(it.toManga()) }
+		viewModel.coverUrl.observe(this, ::loadCover)
+		viewModel.onMangaRemoved.observeEvent(this, ::onMangaRemoved)
+		viewModel.onError
+			.filterNot { appRouter.isChapterPagesSheetShown() }
+			.observeEvent(this, DetailsErrorObserver(this, viewModel, exceptionResolver))
+		viewModel.onActionDone
+			.filterNot { appRouter.isChapterPagesSheetShown() }
+			.observeEvent(this, ReversibleActionObserver(viewBinding.scrollView))
+		combine(viewModel.historyInfo, viewModel.isLoading, ::Pair).observe(this) {
+			onHistoryChanged(it.first, it.second)
+		}
+		viewModel.isLoading.observe(this, ::onLoadingStateChanged)
+		viewModel.scrobblingInfo.observe(this, ::onScrobblingInfoChanged)
+		viewModel.localSize.observe(this, ::onLocalSizeChanged)
+		viewModel.relatedManga.observe(this, ::onRelatedMangaChanged)
+		viewModel.favouriteCategories.observe(this, ::onFavoritesChanged)
+		val menuInvalidator = MenuInvalidator(this)
+		viewModel.isStatsAvailable.observe(this, menuInvalidator)
+		viewModel.remoteManga.observe(this, menuInvalidator)
+		viewModel.tags.observe(this, ::onTagsChanged)
+		viewModel.chapters.observe(this, PrefetchObserver(this))
+		viewModel.onDownloadStarted
+			.filterNot { appRouter.isChapterPagesSheetShown() }
+			.observeEvent(this, DownloadStartedObserver(viewBinding.scrollView))
+		menuProvider = DetailsMenuProvider(
+			activity = this,
+			viewModel = viewModel,
+			snackbarHost = viewBinding.scrollView,
+			appShortcutManager = shortcutManager,
+		)
+		addMenuProvider(menuProvider)
+	}
 
     override fun onProvideAssistContent(outContent: AssistContent) {
         super.onProvideAssistContent(outContent)
@@ -528,7 +543,45 @@ class DetailsActivity :
         // Load cover utama (tidak berubah)
         viewBinding.imageViewCover.setImageAsync(imageUrl, viewModel.getMangaOrNull())
 
-        val panorama = viewBinding.imageViewPanorama ?: return
+	private fun onMangaUpdated(details: MangaDetails) {
+		val manga = details.toManga()
+		with(viewBinding) {
+			textViewTitle.text = manga.title
+			// Alternative titles are hidden here. Sources often carry a translation per language, so
+			// this ran to several lines of text nobody reads before the header even reaches the
+			// favourite button. They are still on the manga object for search and matching.
+			textViewSubtitle.textAndVisible = null
+			textViewNsfw16.isVisible = manga.contentRating == ContentRating.SUGGESTIVE
+			textViewNsfw18.isVisible = manga.contentRating == ContentRating.ADULT
+			textViewDescription.text = details.description.ifNullOrEmpty { getString(R.string.no_description) }
+		}
+		with(infoBinding) {
+			val translation = details.getLocale()
+			infoBinding.textViewTranslation.textAndVisible = translation?.getDisplayLanguage(translation)
+				?.toTitleCase(translation)
+			infoBinding.textViewTranslation.drawableStart = translation?.let {
+				LocaleUtils.getEmojiFlag(it)
+			}?.let {
+				TextDrawable.compound(infoBinding.textViewTranslation, it)
+			}
+			infoBinding.textViewTranslationLabel.isVisible = infoBinding.textViewTranslation.isVisible
+			textViewAuthor.textAndVisible = manga.getAuthorsString()
+			textViewAuthorLabel.isVisible = textViewAuthor.isVisible
+			if (manga.hasRating) {
+				ratingBarRating.rating = manga.rating * ratingBarRating.numStars
+				ratingBarRating.isVisible = true
+				textViewRatingLabel.isVisible = true
+			} else {
+				ratingBarRating.isVisible = false
+				textViewRatingLabel.isVisible = false
+			}
+			manga.state?.let { state ->
+				textViewState.textAndVisible = resources.getString(state.titleResId)
+				textViewStateLabel.isVisible = textViewState.isVisible
+			} ?: run {
+				textViewState.isVisible = false
+				textViewStateLabel.isVisible = false
+			}
 
         if (imageUrl == null) {
             hidePanorama(panorama)
@@ -627,9 +680,49 @@ class DetailsActivity :
         }.nullIfEmpty()
     }
 
-    private class PrefetchObserver(
-        private val context: Context,
-    ) : FlowCollector<List<ChapterListItem>?> {
+	private fun loadCover(imageUrl: String?) {
+		viewBinding.imageViewCover.setImageAsync(imageUrl, viewModel.getMangaOrNull())
+		loadCoverBackground(imageUrl)
+	}
+
+	private fun loadCoverBackground(imageUrl: String?) {
+		val bgView = viewBinding.imageViewCoverBg
+		if (imageUrl == null) {
+			bgView.isVisible = false
+			return
+		}
+		val manga = viewModel.getMangaOrNull()
+		ImageRequest.Builder(this)
+			.data(imageUrl)
+			.lifecycle(this)
+			.crossfade(true)
+			.allowRgb565(true)
+			.target(ImageViewTarget(bgView))
+			.mangaSourceExtra(manga?.source)
+			.enqueueWith(coil)
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+			bgView.setRenderEffect(
+				RenderEffect.createBlurEffect(16f, 16f, Shader.TileMode.CLAMP),
+			)
+		}
+		val surfaceColor = getThemeColor(materialR.attr.colorSurface)
+		val halfAlpha = ColorUtils.setAlphaComponent(surfaceColor, 128)
+		bgView.foreground = GradientDrawable(
+			GradientDrawable.Orientation.TOP_BOTTOM,
+			intArrayOf(surfaceColor, halfAlpha, Color.TRANSPARENT, Color.TRANSPARENT, halfAlpha, surfaceColor),
+		)
+		configureTransparentAppBar()
+		viewBinding.scrollView.setOnScrollChangeListener { _, _, scrollY, _, _ ->
+			bgView.translationY = -scrollY.toFloat()
+		}
+		bgView.isVisible = true
+	}
+
+	private fun configureTransparentAppBar() {
+		viewBinding.appbar.setBackgroundColor(Color.TRANSPARENT)
+		viewBinding.appbar.setStatusBarForegroundColor(Color.TRANSPARENT)
+		viewBinding.toolbar.setBackgroundColor(Color.TRANSPARENT)
+	}
 
         private var isCalled = false
 
@@ -643,7 +736,125 @@ class DetailsActivity :
         }
     }
 
-    companion object {
-        private const val FAV_LABEL_LIMIT = 16
-    }
+	private class PrefetchObserver(
+		private val context: Context,
+	) : FlowCollector<List<ChapterListItem>?> {
+
+		private var isCalled = false
+
+		override suspend fun emit(value: List<ChapterListItem>?) {
+			if (value.isNullOrEmpty()) {
+				return
+			}
+			if (!isCalled) {
+				isCalled = true
+				val item = value.find { it.isCurrent } ?: value.first()
+				MangaPrefetchService.prefetchPages(context, item.chapter)
+			}
+		}
+	}
+
+	companion object {
+
+		private const val FAV_LABEL_LIMIT = 16
+	}
+	/**
+	 * The one place the details screen touches the community feature.
+	 *
+	 * Silent by default: with the feature off, the views absent from this layout variant, or the
+	 * server unreachable, the row simply does not appear. Nothing here may delay or break reading.
+	 */
+	private fun bindCommunityRating(manga: Manga) {
+		val group = viewBinding.groupCommunityRating ?: return
+		val stars = viewBinding.groupCommunityStars ?: return
+		val loading = viewBinding.loadingIndicatorCommunity
+		if (!communityRating.isAvailable) {
+			group.isVisible = false
+			return
+		}
+		val binder = StarRowBinder(
+			stars = listOf(
+				viewBinding.buttonStar1,
+				viewBinding.buttonStar2,
+				viewBinding.buttonStar3,
+				viewBinding.buttonStar4,
+				viewBinding.buttonStar5,
+			).mapNotNull { it },
+			scope = lifecycleScope,
+		) { value ->
+			val updated = communityRating.rate(manga, value)
+			if (updated == null) {
+				Snackbar.make(
+					viewBinding.root,
+					R.string.community_rating_failed,
+					Snackbar.LENGTH_SHORT,
+				).show()
+			} else {
+				showCommunityRating(updated)
+			}
+		}
+
+		// Up immediately, in its loading state. Waiting for the round trip meant the row appeared a
+		// second or two after everything else and pushed the page around as it landed.
+		binder.setEnabled(false)
+		loading?.isVisible = true
+		group.isVisible = false
+		stars.isVisible = false
+
+		// The score is the resting state; the stars are the editor. Five permanent star buttons took
+		// a whole row across the screen for something you touch once.
+		viewBinding.buttonCommunityRating?.setOnClickListener {
+			stars.isVisible = !stars.isVisible
+		}
+
+		viewBinding.buttonCommunityComments?.setOnClickListener {
+			// The work id is already known once the rating has loaded, so the sheet opens on the tap
+			// rather than after a resolve. Only a tap that beats the load takes the slow path.
+			val known = resolvedWorkId
+			if (known != null) {
+				CommunityCommentsSheet.show(supportFragmentManager, known)
+				return@setOnClickListener
+			}
+			lifecycleScope.launch {
+				val workId = communityRating.workId(manga)
+				if (workId == null) {
+					Snackbar.make(
+						viewBinding.root,
+						R.string.community_comments_unavailable,
+						Snackbar.LENGTH_SHORT,
+					).show()
+				} else {
+					resolvedWorkId = workId
+					CommunityCommentsSheet.show(supportFragmentManager, workId)
+				}
+			}
+		}
+		lifecycleScope.launch {
+			val rating = communityRating.load(manga)
+			loading?.isVisible = false
+			if (rating == null) {
+				// Unresolvable or unreachable. The row collapses rather than sitting there broken.
+				group.isVisible = false
+				return@launch
+			}
+			resolvedWorkId = communityRating.workId(manga)
+			binder.setRating(rating.mine?.toFloat() ?: 0f)
+			binder.setEnabled(true)
+			showCommunityRating(rating)
+			group.isVisible = true
+		}
+	}
+
+	/** Cached so the Comments button does not have to resolve the work before it can open. */
+	private var resolvedWorkId: String? = null
+
+	private fun showCommunityRating(rating: RatingResponse) {
+		// The score, and nothing else. How many people voted is not what anyone came to find out.
+		viewBinding.buttonCommunityRating?.text = if (rating.count == 0) {
+			getString(R.string.community_rating_dash)
+		} else {
+			String.format(Locale.getDefault(), "%.1f", rating.average)
+		}
+	}
+
 }

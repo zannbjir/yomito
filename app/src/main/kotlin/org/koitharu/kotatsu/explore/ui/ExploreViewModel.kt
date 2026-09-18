@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.mapLatest
@@ -15,24 +16,24 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.plus
 import org.koitharu.kotatsu.R
 import org.koitharu.kotatsu.core.model.MangaSourceInfo
+import org.koitharu.kotatsu.core.model.isNsfw
 import org.koitharu.kotatsu.core.os.AppShortcutManager
 import org.koitharu.kotatsu.core.prefs.AppSettings
 import org.koitharu.kotatsu.core.prefs.observeAsFlow
 import org.koitharu.kotatsu.core.prefs.observeAsStateFlow
 import org.koitharu.kotatsu.core.ui.BaseViewModel
-import org.koitharu.kotatsu.core.model.isNsfw
 import org.koitharu.kotatsu.core.ui.util.ReversibleAction
 import org.koitharu.kotatsu.core.util.ext.MutableEventFlow
 import org.koitharu.kotatsu.core.util.ext.call
 import org.koitharu.kotatsu.core.util.ext.combine
 import org.koitharu.kotatsu.explore.data.MangaSourcesRepository
+import org.koitharu.kotatsu.explore.data.SourcePreset
+import org.koitharu.kotatsu.explore.data.SourcePresetsRepository
 import org.koitharu.kotatsu.explore.domain.ExploreRepository
 import org.koitharu.kotatsu.explore.ui.model.ExploreButtons
 import org.koitharu.kotatsu.explore.ui.model.MangaSourceItem
 import org.koitharu.kotatsu.explore.ui.model.RecommendationsItem
 import org.koitharu.kotatsu.list.ui.model.EmptyHint
-import org.koitharu.kotatsu.explore.data.SourcePreset
-import org.koitharu.kotatsu.explore.data.SourcePresetsRepository
 import org.koitharu.kotatsu.list.ui.model.ListHeader
 import org.koitharu.kotatsu.list.ui.model.ListModel
 import org.koitharu.kotatsu.list.ui.model.LoadingState
@@ -40,6 +41,7 @@ import org.koitharu.kotatsu.list.ui.model.MangaCompactListModel
 import org.koitharu.kotatsu.parsers.model.Manga
 import org.koitharu.kotatsu.parsers.model.MangaParserSource
 import org.koitharu.kotatsu.parsers.model.MangaSource
+import org.koitharu.kotatsu.sourcescore.domain.SourceRanker
 import org.koitharu.kotatsu.parsers.util.runCatchingCancellable
 import org.koitharu.kotatsu.suggestions.domain.SuggestionRepository
 import javax.inject.Inject
@@ -52,6 +54,7 @@ class ExploreViewModel @Inject constructor(
 	private val sourcesRepository: MangaSourcesRepository,
 	private val presetsRepository: SourcePresetsRepository,
 	private val shortcutManager: AppShortcutManager,
+	private val sourceRanker: SourceRanker,
 ) : BaseViewModel() {
 
 	val isGrid = settings.observeAsStateFlow(
@@ -77,7 +80,6 @@ class ExploreViewModel @Inject constructor(
 	).flatMapLatest { id ->
 		if (id == 0L) flowOf(null) else presetsRepository.observe(id)
 	}.stateIn(viewModelScope + Dispatchers.Default, SharingStarted.Eagerly, null)
-
 
 	val onOpenManga = MutableEventFlow<Manga>()
 	val onActionDone = MutableEventFlow<ReversibleAction>()
@@ -174,7 +176,13 @@ class ExploreViewModel @Inject constructor(
 	private fun observeSourcesForDisplay(): Flow<List<MangaSourceInfo>> =
 		activePresetFlow.flatMapLatest { preset: SourcePreset? ->
 			if (preset != null) {
-				flowOf(getPresetSources(preset))
+				// Same ordering rules as the enabled list, and re-sorted when scores download.
+				combine(
+					sourcesRepository.observeSourcesSortOrder(),
+					sourcesRepository.observeScoreUpdates(),
+				) { order, _ ->
+					sourcesRepository.sortForDisplay(getPresetSources(preset), order)
+				}
 			} else {
 				sourcesRepository.observeEnabledSources()
 			}
@@ -199,7 +207,7 @@ class ExploreViewModel @Inject constructor(
 		buildList(sources, suggestions, grid, randomLoading, allSourcesEnabled, activePreset)
 	}.withErrorHandling()
 
-	private fun buildList(
+	private suspend fun buildList(
 		sources: List<MangaSourceInfo>,
 		recommendation: List<Manga>,
 		isGrid: Boolean,
@@ -218,7 +226,12 @@ class ExploreViewModel @Inject constructor(
 				textRes = R.string.remote_sources,
 				buttonTextRes = if (allSourcesEnabled) R.string.manage else R.string.catalog,
 			)
-			sources.mapTo(result) { MangaSourceItem(it, isGrid) }
+			// Markers come from the community score, ranked within this user's language. A failure
+			// here just means no markers - it must never cost the source list itself.
+			val trending = runCatchingCancellable {
+				sourceRanker.trendingSources(sources.map { it.mangaSource })
+			}.getOrDefault(emptySet())
+			sources.mapTo(result) { MangaSourceItem(it, isGrid, it.name in trending) }
 		} else {
 			result += EmptyHint(
 				icon = R.drawable.ic_empty_common,
