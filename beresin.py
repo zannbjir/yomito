@@ -10,6 +10,7 @@ Jalankan dari root folder repo yomito.
     python3 beresin-konflik.py pakai-yomito  <file>   ambil versi Yomito utk 1 file
     python3 beresin-konflik.py gabung     ambil dua sisi utk file tambah-tambah
     python3 beresin-konflik.py tanda      cek penanda konflik yang tertinggal
+    python3 beresin-konflik.py cek-widget cek status widget & backup preset
     python3 beresin-konflik.py selesai    tandai semua selesai + commit
 
 Script tidak pernah commit kecuali kamu jalankan 'selesai'.
@@ -529,6 +530,133 @@ def cmd_dedup():
     warn("(biasanya versi Kotatsu). Untuk app_name, pastikan masih 'Yomito'.")
 
 
+def cmd_widget():
+    """Cek status fitur khas Yomito (widget Lanjut Baca + backup preset)."""
+    perlu_repo()
+    print()
+    info("Memeriksa fitur khas Yomito ...")
+    print()
+
+    # 1. file widget
+    wdir = Path("app/src/main/kotlin/org/koitharu/kotatsu/widget")
+    wajib = [
+        wdir / "continuereading/ContinueReadingWidget.kt",
+        wdir / "common/WidgetEntryPoint.kt",
+        wdir / "common/WidgetCoverLoader.kt",
+        wdir / "common/WidgetIntents.kt",
+        wdir / "common/WidgetScope.kt",
+        wdir / "common/WidgetSizes.kt",
+        Path("app/src/main/res/layout/widget_continue_reading.xml"),
+        Path("app/src/main/res/layout/widget_continue_reading_empty.xml"),
+        Path("app/src/main/res/layout/widget_continue_reading_small.xml"),
+        Path("app/src/main/res/xml/widget_continue_reading.xml"),
+    ]
+    hilang = [f for f in wajib if not f.exists()]
+    if hilang:
+        err(f"File widget HILANG ({len(hilang)}):")
+        for f in hilang:
+            print(f"      {f}")
+    else:
+        ok(f"File widget lengkap ({len(wajib)} file)")
+
+    # 2. manifest
+    man = Path("app/src/main/AndroidManifest.xml")
+    if man.exists() and "ContinueReadingWidget" in man.read_text(encoding="utf-8", errors="replace"):
+        ok("Widget terdaftar di AndroidManifest.xml")
+    else:
+        err("Widget TIDAK terdaftar di AndroidManifest.xml")
+
+    # 3. hook nudgeAll
+    print()
+    hits = []
+    for f in Path("app/src/main/kotlin").rglob("*.kt"):
+        try:
+            t = f.read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            continue
+        if "nudgeAll(" in t and "fun nudgeAll" not in t:
+            hits.append(f)
+    if hits:
+        ok(f"Hook nudgeAll terpasang di {len(hits)} file:")
+        for f in hits:
+            print(f"      {f}")
+    else:
+        warn("Hook nudgeAll BELUM terpasang.")
+        print("      Pasang di ReaderActivity.kt dan MainActivity.kt")
+        print("      Lihat panduan 'lanjutan-dari-dedup' bagian B.")
+
+    # 4. WidgetUpdater
+    upd = wdir / "WidgetUpdater.kt"
+    if upd.exists():
+        t = upd.read_text(encoding="utf-8", errors="replace")
+        if "ContinueReadingWidget" in t:
+            ok("WidgetUpdater terhubung ke widget")
+        else:
+            warn("WidgetUpdater belum menyertakan ContinueReadingWidget (opsional)")
+
+    # 5. preset backup
+    print()
+    dao = Path("app/src/main/kotlin/org/koitharu/kotatsu/explore/data/SourcePresetsDao.kt")
+    if dao.exists():
+        t = dao.read_text(encoding="utf-8", errors="replace")
+        punya_dump = "fun dump(" in t
+        punya_upsert = "fun upsert(" in t
+        if punya_dump and punya_upsert:
+            ok("SourcePresetsDao punya dump() + upsert()")
+        else:
+            warn("SourcePresetsDao belum lengkap:")
+            print(f"      dump()   : {'ada' if punya_dump else 'BELUM'}")
+            print(f"      upsert() : {'ada' if punya_upsert else 'BELUM'}")
+    else:
+        err("SourcePresetsDao.kt tidak ditemukan")
+
+    model = Path("app/src/main/kotlin/org/koitharu/kotatsu/backups/data/model/SourcePresetBackup.kt")
+    if model.exists():
+        ok("SourcePresetBackup.kt ada")
+    else:
+        warn("SourcePresetBackup.kt tidak ada")
+
+    # 6. branding
+    print()
+    st = Path("app/src/main/res/values/strings.xml")
+    if st.exists():
+        import re
+        m = re.search(r'<string name="app_name"[^>]*>([^<]+)</string>', st.read_text(encoding="utf-8", errors="replace"))
+        nama = m.group(1) if m else "?"
+        if nama.strip() == "Yomito":
+            ok(f"app_name = {nama}")
+        else:
+            err(f"app_name = {nama}  (harusnya Yomito)")
+
+    const = Path("app/src/main/res/values/constants.xml")
+    if const.exists():
+        t = const.read_text(encoding="utf-8", errors="replace")
+        if "zannbjir/yomito" in t:
+            ok("Branding url_github/github_updates_repo = zannbjir/yomito")
+        else:
+            warn("Branding url_github belum menunjuk ke zannbjir/yomito")
+
+    bgradle = Path("app/build.gradle")
+    if bgradle.exists():
+        t = bgradle.read_text(encoding="utf-8", errors="replace")
+        if "yomito-parsers" in t:
+            ok("app/build.gradle pakai yomito-parsers")
+        else:
+            err("app/build.gradle TIDAK pakai yomito-parsers (sumber webmu hilang!)")
+
+    tv = Path("gradle/libs.versions.toml")
+    if tv.exists():
+        import re
+        m = re.search(r'^parsers\s*=\s*"([^"]+)"', tv.read_text(encoding="utf-8", errors="replace"), re.M)
+        if m:
+            val = m.group(1)
+            if val.startswith("52a02475d8") or val != "b3c0000245":
+                ok(f"libs.versions.toml parsers = {val}")
+            else:
+                err(f"parsers = {val}  (ini punya Kotatsu, sumber webmu hilang!)")
+
+    print()
+
 def main():
     a = sys.argv[1:]
     if not a:
@@ -547,6 +675,8 @@ def main():
         cmd_gabung()
     elif c == "tanda":
         cmd_tanda()
+    elif c == "cek-widget":
+        cmd_widget()
     elif c == "dedup":
         cmd_dedup()
     elif c == "duplikat":

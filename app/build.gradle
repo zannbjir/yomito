@@ -38,7 +38,7 @@ android {
 	}
 
 	defaultConfig {
-		applicationId 'io.github.toto.kotatsu'
+		applicationId 'io.github.arus.kotatsu'
 		minSdk = 23
 		targetSdk = 37
 		versionCode = 1095

@@ -21,6 +21,12 @@ abstract class SourcePresetsDao {
 	@Query("SELECT * FROM source_presets WHERE preset_id = :id AND deleted_at = 0")
 	abstract fun observe(id: Long): Flow<SourcePresetEntity?>
 
+	@Query("SELECT * FROM source_presets WHERE deleted_at = 0")
+	abstract suspend fun dump(): List<SourcePresetEntity>
+
+	@Insert(onConflict = OnConflictStrategy.REPLACE)
+	abstract suspend fun upsert(entity: SourcePresetEntity): Long
+
 	@Insert(onConflict = OnConflictStrategy.ABORT)
 	abstract suspend fun insert(entity: SourcePresetEntity): Long
 

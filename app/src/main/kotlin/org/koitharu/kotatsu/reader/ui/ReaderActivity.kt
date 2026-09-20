@@ -72,6 +72,7 @@ import org.koitharu.kotatsu.reader.ui.config.ReaderConfigSheet
 import org.koitharu.kotatsu.reader.ui.pager.ReaderPage
 import org.koitharu.kotatsu.reader.ui.pager.ReaderUiState
 import org.koitharu.kotatsu.reader.ui.tapgrid.TapGridDispatcher
+import org.koitharu.kotatsu.widget.continuereading.ContinueReadingWidget
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import androidx.appcompat.R as appcompatR
@@ -233,6 +234,7 @@ class ReaderActivity :
     override fun onStop() {
         super.onStop()
         viewModel.onStop()
+        ContinueReadingWidget.nudgeAll(this)
     }
 
     override fun onProvideAssistContent(outContent: AssistContent) {
@@ -245,6 +247,7 @@ class ReaderActivity :
     override fun onIdle() {
         viewModel.saveCurrentState(readerManager.currentReader?.getCurrentState())
         viewModel.onIdle()
+        ContinueReadingWidget.nudgeAll(this)
     }
 
     override fun onVisibilityChanged(v: View, visibility: Int) {
@@ -339,6 +342,7 @@ class ReaderActivity :
 
     override fun onChapterSelected(chapter: MangaChapter): Boolean {
         viewModel.switchChapter(chapter.id, 0)
+        ContinueReadingWidget.nudgeAll(this)
         return true
     }
 
@@ -354,6 +358,7 @@ class ReaderActivity :
                 viewModel.switchChapter(page.chapterId, page.index)
             }
         }
+        ContinueReadingWidget.nudgeAll(this)
         return true
     }
 

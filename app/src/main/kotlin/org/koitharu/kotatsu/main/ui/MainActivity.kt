@@ -81,6 +81,7 @@ import org.koitharu.kotatsu.search.domain.ScreenSearchQuery
 import org.koitharu.kotatsu.search.ui.suggestion.SearchSuggestionScope
 import org.koitharu.kotatsu.search.ui.suggestion.SearchSuggestionViewModel
 import org.koitharu.kotatsu.search.ui.suggestion.adapter.SearchSuggestionAdapter
+import org.koitharu.kotatsu.widget.continuereading.ContinueReadingWidget
 import javax.inject.Inject
 import com.google.android.material.R as materialR
 import org.koitharu.kotatsu.sourcescore.data.CommunitySettings
@@ -196,6 +197,11 @@ class MainActivity : BaseActivity<ActivityMainBinding>(), AppBarOwner, BottomNav
 		viewBinding.bottomNav?.addOnLayoutChangeListener(this)
 		viewBinding.searchView.addTransitionListener(this)
 		viewBinding.searchView.addTransitionListener(exitCallback)
+		lifecycleScope.launch {
+          withResumed {
+              ContinueReadingWidget.nudgeAll(this@MainActivity)
+         }
+    }
 		initSearch()
 	}
 
