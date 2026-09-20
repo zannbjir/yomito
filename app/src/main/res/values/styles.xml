@@ -376,7 +376,7 @@
 <style name="TextAppearance.Widget.Menu" parent="TextAppearance.AppCompat.Menu">
 		<item name="android:textColor">?attr/colorOnBackground</item>
 	</style>
-<style name="TextAppearance.Kotatsu.Preference.Secondary" parent="TextAppearance.Material3.BodySmall" />
+	<style name="TextAppearance.Kotatsu.Preference.Secondary" parent="TextAppearance.Material3.BodySmall" />
 
 	<style name="TextAppearance.Kotatsu.GridTitle" parent="TextAppearance.Material3.TitleSmall" />
 
@@ -386,7 +386,8 @@
 		<item name="lineHeight">14sp</item>
 		<item name="android:lineHeight" tools:ignore="NewApi">14sp</item>
 	</style>
-<style name="TextAppearance.Kotatsu.GridTitle.OnCover" parent="TextAppearance.Material3.TitleSmall">
+
+	<style name="TextAppearance.Kotatsu.GridTitle.OnCover" parent="TextAppearance.Material3.TitleSmall">
 		<item name="fontFamily">@font/google_sans_bold</item>
 		<item name="android:fontFamily">@font/google_sans_bold</item>
 		<item name="android:textColor">@android:color/white</item>
@@ -396,16 +397,22 @@
 		<item name="android:shadowDy">1</item>
 		<item name="android:shadowRadius">3</item>
 	</style>
-<style name="TextAppearance.Kotatsu.GridTitle.OnCover.Small">
+
+	<style name="TextAppearance.Kotatsu.GridTitle.OnCover.Small">
 		<item name="android:textSize">12sp</item>
 		<item name="lineHeight">14sp</item>
 		<item name="android:lineHeight" tools:ignore="NewApi">14sp</item>
 	</style>
-<style name="TextAppearance.Kotatsu.Shadowed" parent="TextAppearance.Material3.LabelLarge">
+
+	<style name="TextAppearance.Kotatsu.Shadowed" parent="TextAppearance.Material3.LabelLarge">
 		<item name="fontFamily">@font/google_sans_bold</item>
 		<item name="android:fontFamily">@font/google_sans_bold</item>
-	<!-- Grid-cover titles are overlaid on a dark scrim, so they are light with a soft shadow.
-	     Used only by the manga grid card (applied via ItemSizeResolver). -->
+		<item name="android:shadowColor">#80000000</item>
+		<item name="android:shadowDx">0</item>
+		<item name="android:shadowDy">1</item>
+		<item name="android:shadowRadius">3</item>
+	</style>
+
 	<style name="TextAppearance.Kotatsu.GridTitle.Overlay">
         <item name="android:textColor">@android:color/white</item>
         <item name="android:textStyle">bold</item>
@@ -417,15 +424,16 @@
         <item name="android:lineSpacingExtra">-2sp</item>
         <item name="android:textSize">13sp</item>
     </style>
-<style name="TextAppearance.Kotatsu.GridTitle.Small.Overlay">
-		<item name="android:textColor">@android:color/white</item>
 
+	<style name="TextAppearance.Kotatsu.GridTitle.Small.Overlay">
+		<item name="android:textColor">@android:color/white</item>
 		<item name="android:shadowColor">#80000000</item>
 		<item name="android:shadowDx">0</item>
 		<item name="android:shadowDy">1</item>
 		<item name="android:shadowRadius">3</item>
 	</style>
-<style name="TextAppearance.Kotatsu.Shadowed.NavLabel" parent="TextAppearance.Material3.LabelMedium">
+
+	<style name="TextAppearance.Kotatsu.Shadowed.NavLabel" parent="TextAppearance.Material3.LabelMedium">
 		<item name="fontFamily">@font/google_sans_bold</item>
 		<item name="android:fontFamily">@font/google_sans_bold</item>
 		<item name="android:shadowColor">#80000000</item>

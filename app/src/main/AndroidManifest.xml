@@ -210,13 +210,6 @@
 			android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
 			android:windowSoftInputMode="adjustResize" />
 		<activity
-			android:name="org.koitharu.kotatsu.browser.cloudflare.CloudFlareHiddenActivity"
-			android:autoRemoveFromRecents="true"
-			android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
-			android:excludeFromRecents="true"
-			android:theme="@style/Theme.Kotatsu.CloudFlareHidden"
-			android:windowSoftInputMode="adjustResize" />
-		<activity
 			android:name="org.koitharu.kotatsu.browser.cloudflare.CloudFlareActivity"
 			android:autoRemoveFromRecents="true"
 			android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"

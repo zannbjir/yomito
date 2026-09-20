@@ -130,7 +130,6 @@
 		android:title="@string/crop_pages" />
 
 	<PreferenceCategory
-		<PreferenceCategory
 
 		android:title="@string/e_ink"
 		app:allowDividerAbove="true">

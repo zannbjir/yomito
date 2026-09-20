@@ -11,6 +11,10 @@ Jalankan dari root folder repo yomito.
     python3 beresin-konflik.py gabung     ambil dua sisi utk file tambah-tambah
     python3 beresin-konflik.py tanda      cek penanda konflik yang tertinggal
     python3 beresin-konflik.py cek-widget cek status widget & backup preset
+    python3 beresin-konflik.py rapikan-styles perbaiki tag <style> yang rusak
+    python3 beresin-konflik.py rapikan-xml  perbaiki xmlns ganda & tag dobel
+    python3 beresin-konflik.py perbaiki-layout perbaiki layout & values yang rusak
+    python3 beresin-konflik.py rapikan-manifest buang penanda & Activity duplikat di manifest
     python3 beresin-konflik.py selesai    tandai semua selesai + commit
 
 Script tidak pernah commit kecuali kamu jalankan 'selesai'.
@@ -657,6 +661,382 @@ def cmd_widget():
 
     print()
 
+
+
+def cmd_rapikan_styles():
+    """Ganti blok rusak di styles.xml dengan versi benar (dari Kotatsu 9.8.4 + blok Yomito)."""
+    f = Path("app/src/main/res/values/styles.xml")
+    if not f.exists():
+        err("app/src/main/res/values/styles.xml tidak ditemukan")
+        return
+
+    def validasi():
+        try:
+            import xml.dom.minidom as minidom
+            minidom.parse(str(f))
+            return None
+        except Exception as e:
+            return e
+
+    err0 = validasi()
+    print()
+    if err0 is None:
+        ok("styles.xml sudah XML valid. Tidak ada yang perlu diperbaiki.")
+        return
+    warn(f"XML rusak: {err0}")
+    print()
+
+    lama = f.read_text(encoding="utf-8")
+    baris = lama.split("\n")
+
+    def blok(teks):
+        return [l for l in teks.split("\n") if l.strip()]
+
+    # --- Blok pengganti, sumbernya Kotatsu 9.8.4 commit ef09cb2 ---
+    baru_kt = """	<style name="TextAppearance.Kotatsu.Preference.Secondary" parent="TextAppearance.Material3.BodySmall" />
+
+	<style name="TextAppearance.Kotatsu.GridTitle" parent="TextAppearance.Material3.TitleSmall" />
+
+	<style name="TextAppearance.Kotatsu.GridTitle.Small" parent="TextAppearance.Material3.TitleSmall">
+		<item name="android:textSize">12sp</item>
+		<item name="android:letterSpacing">0.00714286</item>
+		<item name="lineHeight">14sp</item>
+		<item name="android:lineHeight" tools:ignore="NewApi">14sp</item>
+	</style>
+
+	<style name="TextAppearance.Kotatsu.GridTitle.OnCover" parent="TextAppearance.Material3.TitleSmall">
+		<item name="fontFamily">@font/google_sans_bold</item>
+		<item name="android:fontFamily">@font/google_sans_bold</item>
+		<item name="android:textColor">@android:color/white</item>
+		<item name="android:letterSpacing">0</item>
+		<item name="android:shadowColor">#B3000000</item>
+		<item name="android:shadowDx">0</item>
+		<item name="android:shadowDy">1</item>
+		<item name="android:shadowRadius">3</item>
+	</style>
+
+	<style name="TextAppearance.Kotatsu.GridTitle.OnCover.Small">
+		<item name="android:textSize">12sp</item>
+		<item name="lineHeight">14sp</item>
+		<item name="android:lineHeight" tools:ignore="NewApi">14sp</item>
+	</style>
+
+	<style name="TextAppearance.Kotatsu.Shadowed" parent="TextAppearance.Material3.LabelLarge">
+		<item name="fontFamily">@font/google_sans_bold</item>
+		<item name="android:fontFamily">@font/google_sans_bold</item>
+		<item name="android:shadowColor">#80000000</item>
+		<item name="android:shadowDx">0</item>
+		<item name="android:shadowDy">1</item>
+		<item name="android:shadowRadius">3</item>
+	</style>
+
+	<style name="TextAppearance.Kotatsu.GridTitle.Overlay">
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:shadowColor">#B0000000</item>
+        <item name="android:shadowDx">0</item>
+        <item name="android:shadowDy">2</item>
+        <item name="android:shadowRadius">4</item>
+        <item name="android:letterSpacing">-0.01</item>
+        <item name="android:lineSpacingExtra">-2sp</item>
+        <item name="android:textSize">13sp</item>
+    </style>
+
+	<style name="TextAppearance.Kotatsu.GridTitle.Small.Overlay">
+		<item name="android:textColor">@android:color/white</item>
+		<item name="android:shadowColor">#80000000</item>
+		<item name="android:shadowDx">0</item>
+		<item name="android:shadowDy">1</item>
+		<item name="android:shadowRadius">3</item>
+	</style>
+
+	<style name="TextAppearance.Kotatsu.Shadowed.NavLabel" parent="TextAppearance.Material3.LabelMedium">
+		<item name="fontFamily">@font/google_sans_bold</item>
+		<item name="android:fontFamily">@font/google_sans_bold</item>
+		<item name="android:shadowColor">#80000000</item>
+		<item name="android:shadowDx">0</item>
+		<item name="android:shadowDy">1</item>
+		<item name="android:shadowRadius">3</item>
+	</style>"""
+
+    # --- Cari awal blok rusak: baris Preference.Secondary ---
+    i_awal = None
+    for i, l in enumerate(baris):
+        if 'name="TextAppearance.Kotatsu.Preference.Secondary"' in l:
+            i_awal = i
+            break
+    if i_awal is None:
+        err("Tidak menemukan titik awal blok (Preference.Secondary).")
+        print("      Kirim isi styles.xml ke agent.")
+        return
+
+    # --- Cari akhir blok rusak: penutup Shadowed.NavLabel ---
+    i_akhir = None
+    for j in range(i_awal, min(i_awal + 120, len(baris))):
+        if 'name="TextAppearance.Kotatsu.Shadowed.NavLabel"' in baris[j]:
+            for k in range(j, len(baris)):
+                if "</style>" in baris[k]:
+                    i_akhir = k
+                    break
+            break
+    if i_akhir is None:
+        err("Tidak menemukan titik akhir blok (Shadowed.NavLabel).")
+        print("      Kirim isi styles.xml ke agent.")
+        return
+
+    potong = baris[i_awal:i_akhir + 1]
+    print()
+    info(f"Mengganti baris {i_awal + 1}-{i_akhir + 1} ({len(potong)} baris) ...")
+    for l in potong[:5]:
+        print(f"      - {l.strip()[:70]}")
+    print("      ...")
+    for l in potong[-3:]:
+        print(f"      - {l.strip()[:70]}")
+
+    hasil = baris[:i_awal] + baru_kt.split("\n") + baris[i_akhir + 1:]
+    f.write_text("\n".join(hasil), encoding="utf-8")
+
+    err1 = validasi()
+    if err1 is None:
+        print()
+        ok("styles.xml sekarang XML valid.")
+        print("      Jalankan: ./gradlew assembleDebug")
+    else:
+        err(f"Masih invalid: {err1}")
+        print("      Kembalikan dengan: git checkout app/src/main/res/values/styles.xml")
+        print("      Lalu kirim pesan ini ke agent.")
+
+def cmd_rapikan_xml():
+    """Perbaiki XML rusak akibat merge: xmlns duplikat, tag pembuka dobel."""
+    import re as _re
+    root = Path("app/src/main/res")
+    if not root.exists():
+        err("Folder app/src/main/res tidak ditemukan. Jalankan dari root repo.")
+        return
+
+    print()
+    info("Memindai semua XML di app/src/main/res ...")
+
+    diperbaiki = []
+
+    # --- Pola 1: atribut xmlns sama ditulis dua kali di elemen yang sama ---
+    for f in sorted(root.rglob("*.xml")):
+        try:
+            t = f.read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError):
+            continue
+        lines = t.split("\n")
+        buang = []
+        for i, l in enumerate(lines):
+            if _re.search(r'^\s*xmlns:[A-Za-z0-9_]+\s*=', l):
+                kunci = _re.match(r'^\s*(xmlns:[A-Za-z0-9_]+)\s*=', l).group(1)
+                sama = [j for j in buang if _re.match(r'^\s*' + kunci + r'\s*=', lines[j])]
+                if sama or any(_re.match(r'^\s*' + kunci + r'\s*=', x) for x in lines[:i]):
+                    buang.append(i)
+        if buang:
+            for i in reversed(buang):
+                del lines[i]
+            f.write_text("\n".join(lines), encoding="utf-8")
+            diperbaiki.append((str(f), f"{len(buang)} atribut xmlns duplikat"))
+
+    # --- Pola 2: tag pembuka dobel, "<Foo" lalu "<Foo" tanpa atribut ---
+    for f in sorted(root.rglob("*.xml")):
+        try:
+            lines = f.read_text(encoding="utf-8").split("\n")
+        except (OSError, UnicodeDecodeError):
+            continue
+        buang = []
+        for i in range(len(lines) - 1):
+            a, b = lines[i], lines[i + 1]
+            ma = _re.match(r'^(\s*)<([A-Za-z][A-Za-z0-9_.]*)\s*$', a)
+            mb = _re.match(r'^(\s*)<([A-Za-z][A-Za-z0-9_.]*)\s*$', b)
+            if ma and mb and ma.group(2) == mb.group(2):
+                buang.append(i + 1)
+        if buang:
+            for i in reversed(buang):
+                del lines[i]
+            f.write_text("\n".join(lines), encoding="utf-8")
+            diperbaiki.append((str(f), f"{len(buang)} tag pembuka dobel"))
+
+    print()
+    if not diperbaiki:
+        ok("Tidak ada XML rusak yang ditemukan.")
+        return
+    for f, ket in diperbaiki:
+        ok(f"{f}  ->  {ket}")
+
+    # --- Validasi ulang semua XML ---
+    print()
+    info("Memvalidasi ulang ...")
+    gagal = []
+    for f in sorted(root.rglob("*.xml")):
+        try:
+            import xml.dom.minidom as minidom
+            minidom.parse(str(f))
+        except Exception as e:
+            gagal.append((str(f), str(e)))
+    if gagal:
+        err(f"Masih ada {len(gagal)} XML bermasalah:")
+        for f, e in gagal:
+            print(f"      {f}")
+            print(f"        {e}")
+    else:
+        ok(f"Semua {len(list(root.rglob('*.xml')))} XML valid.")
+        print("      Jalankan: ./gradlew assembleDebug")
+
+def cmd_perbaiki_layout():
+    """Perbaiki 4 file yang rusak karena komentar/tag tergeser saat merge."""
+    import re as _re
+    print()
+    info("Memperbaiki layout & values yang rusak ...")
+    n = 0
+
+    # --- 1. constants.xml: buang sisa penanda ---
+    f = Path("app/src/main/res/values/constants.xml")
+    if f.exists():
+        lines = f.read_text(encoding="utf-8").split("\n")
+        baru = [l for l in lines if not _re.match(r'^(<<<<<<<|=======|>>>>>>>)', l)]
+        if len(baru) != len(lines):
+            f.write_text("\n".join(baru), encoding="utf-8")
+            ok(f"constants.xml  ->  {len(lines) - len(baru)} penanda dibuang")
+            n += 1
+
+    # --- 2. activity_main.xml: tag menggantung + komentar di dalam tag ---
+    f = Path("app/src/main/res/layout/activity_main.xml")
+    if f.exists():
+        t = f.read_text(encoding="utf-8")
+        if _re.search(r'FloatingBottomNavigationView\s*\n\s*<!--', t):
+            komentar = [
+                "\t<!--",
+                "\t\tLayout params di sini adalah default (non-floating).",
+                "\t\tSaat isFloating = true, applyFloatingStyle() di SlidingBottomNavigationView.kt",
+                "\t\takan otomatis mengubah width → wrap_content, gravity → center|bottom,",
+                "\t\tdan menambahkan margin horizontal 24dp + bottom 16dp secara programatik.",
+                "\t-->",
+                "\t<org.koitharu.kotatsu.core.ui.widgets.FloatingBottomNavigationView",
+            ]
+            t2 = _re.sub(
+                r'\t<org\.koitharu\.kotatsu\.core\.ui\.widgets\.FloatingBottomNavigationView\s*\n'
+                r'\s*<!--.*?-->\s*\n'
+                r'\s*<org\.koitharu\.kotatsu\.core\.ui\.widgets\.SlidingBottomNavigationView\s*\n',
+                "\n".join(komentar) + "\n",
+                t, count=1, flags=_re.S,
+            )
+            if t2 != t:
+                f.write_text(t2, encoding="utf-8")
+                ok("activity_main.xml  ->  tag menggantung diperbaiki (pakai Floating 9.8.4)")
+                n += 1
+
+    # --- 3. activity_details.xml: AppBarLayout menggantung + ImageView menyelinap ---
+    f = Path("app/src/main/res/layout/activity_details.xml")
+    if f.exists():
+        lines = f.read_text(encoding="utf-8").split("\n")
+        for i in range(len(lines) - 3):
+            if ('AppBarLayout' in lines[i] and '@+id/appbar' in lines[i + 1]
+                    and lines[i + 2].strip() == '<ImageView'):
+                del lines[i:i + 2]
+                lines[i] = "\t<ImageView"
+                if lines[i + 1].strip() == "":
+                    del lines[i + 1]
+                f.write_text("\n".join(lines), encoding="utf-8")
+                ok("activity_details.xml  ->  AppBarLayout menggantung dibuang")
+                n += 1
+                break
+
+    print()
+    if n == 0:
+        warn("Tidak ada yang cocok. Mungkin sudah diperbaiki.")
+    else:
+        ok(f"{n} file diperbaiki.")
+
+    # --- validasi ulang semua XML ---
+    print()
+    info("Memvalidasi ulang semua XML ...")
+    root = Path("app/src/main/res")
+    gagal = []
+    for x in sorted(root.rglob("*.xml")):
+        try:
+            import xml.dom.minidom as minidom
+            minidom.parse(str(x))
+        except Exception as e:
+            gagal.append((str(x), str(e)))
+    if gagal:
+        err(f"Masih ada {len(gagal)} XML bermasalah:")
+        for x, e in gagal:
+            print(f"      {x}")
+            print(f"        {e}")
+    else:
+        ok(f"Semua {len(list(root.rglob('*.xml')))} XML valid.")
+        print("      Jalankan: ./gradlew assembleDebug")
+
+def cmd_rapikan_manifest():
+    """Buang penanda konflik di AndroidManifest.xml + hapus Activity duplikat."""
+    import re as _re
+    from collections import Counter
+    f = Path("app/src/main/AndroidManifest.xml")
+    if not f.exists():
+        err("app/src/main/AndroidManifest.xml tidak ditemukan")
+        return
+    print()
+    lines = f.read_text(encoding="utf-8").split("\n")
+    n_penanda = 0
+
+    # --- 1. Buang penanda konflik, ambil sisi upstream (isi baru dari Kotatsu) ---
+    if any(l.strip().startswith(("<<<<<<<", "=======", ">>>>>>>")) for l in lines):
+        out, mode = [], "up"
+        for l in lines:
+            t = l.strip()
+            if t.startswith("<<<<<<<"):
+                n_penanda += 1
+                mode = "head"
+                continue
+            if t == "=======":
+                mode = "up"
+                continue
+            if t.startswith(">>>>>>>"):
+                mode = "up"
+                continue
+            if mode == "head":
+                continue      # lewati sisi HEAD (biasanya kosong)
+            out.append(l)
+        lines = out
+        ok(f"AndroidManifest.xml  ->  {n_penanda} penanda konflik dibuang")
+
+    # --- 2. Hapus blok <activity> duplikat (simpan yang terakhir) ---
+    txt = "\n".join(lines)
+    acts = _re.findall(r'<activity\s+android:name="([^"]+)"', txt)
+    dup = [k for k, v in Counter(acts).items() if v > 1]
+    for nama in dup:
+        # kumpulkan semua blok <activity ...> yang memuat nama ini
+        blok = list(_re.finditer(
+            r'[ \t]*<activity\b(?:(?!<activity\b).)*?android:name="' + _re.escape(nama) + r'"(?:(?!<activity\b).)*?/>\s*\n',
+            txt, _re.S))
+        if len(blok) > 1:
+            for m in reversed(blok[:-1]):       # sisakan yang terakhir
+                txt = txt[:m.start()] + txt[m.end():]
+            ok(f"AndroidManifest.xml  ->  Activity duplikat dihapus: {nama.rsplit('.', 1)[-1]}")
+
+    if txt != "\n".join(lines):
+        f.write_text(txt, encoding="utf-8")
+    elif n_penanda == 0:
+        ok("AndroidManifest.xml  ->  sudah bersih")
+
+    # --- validasi ---
+    print()
+    try:
+        import xml.dom.minidom as minidom
+        minidom.parse(str(f))
+    except Exception as e:
+        err(f"AndroidManifest.xml masih bermasalah: {e}")
+        return
+    acts = _re.findall(r'<activity\s+android:name="([^"]+)"', f.read_text(encoding="utf-8"))
+    d = {k: v for k, v in Counter(acts).items() if v > 1}
+    if d:
+        err(f"Masih ada Activity duplikat: {d}")
+    else:
+        ok(f"AndroidManifest.xml valid, {len(acts)} Activity, tidak ada duplikat.")
+        print("      Jalankan: ./gradlew assembleDebug")
+
 def main():
     a = sys.argv[1:]
     if not a:
@@ -677,6 +1057,14 @@ def main():
         cmd_tanda()
     elif c == "cek-widget":
         cmd_widget()
+    elif c == "rapikan-styles":
+        cmd_rapikan_styles()
+    elif c == "rapikan-xml":
+        cmd_rapikan_xml()
+    elif c == "perbaiki-layout":
+        cmd_perbaiki_layout()
+    elif c == "rapikan-manifest":
+        cmd_rapikan_manifest()
     elif c == "dedup":
         cmd_dedup()
     elif c == "duplikat":

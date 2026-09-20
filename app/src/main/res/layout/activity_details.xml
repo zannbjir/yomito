@@ -21,9 +21,7 @@
 		android:visibility="gone"
 		tools:ignore="ContentDescription" />
 
-	<com.google.android.material.appbar.AppBarLayout
-		android:id="@+id/appbar"
-    <ImageView
+	<ImageView
 		android:id="@+id/imageView_cover_bg"
 
 		android:layout_width="match_parent"

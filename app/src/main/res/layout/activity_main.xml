@@ -80,15 +80,13 @@
 		tools:ignore="InconsistentLayout"
 		tools:visibility="visible" />
 
-	<org.koitharu.kotatsu.core.ui.widgets.FloatingBottomNavigationView
 	<!--
 		Layout params di sini adalah default (non-floating).
 		Saat isFloating = true, applyFloatingStyle() di SlidingBottomNavigationView.kt
 		akan otomatis mengubah width → wrap_content, gravity → center|bottom,
 		dan menambahkan margin horizontal 24dp + bottom 16dp secara programatik.
 	-->
-	<org.koitharu.kotatsu.core.ui.widgets.SlidingBottomNavigationView
-
+	<org.koitharu.kotatsu.core.ui.widgets.FloatingBottomNavigationView
 		android:id="@+id/bottomNav"
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
