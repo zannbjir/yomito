@@ -123,6 +123,14 @@ class MangaDataRepository @Inject constructor(
 		return db.getMangaDao().findByPublicUrl(publicUrl)?.toManga()
 	}
 
+	suspend fun findLibraryMangaBySource(source: MangaSource): List<Manga> {
+		return db.getMangaDao().findLibraryBySource(source.name).map { it.toManga() }
+	}
+
+	suspend fun findAllMangaBySource(source: MangaSource): List<Manga> {
+		return db.getMangaDao().findAllBySource(source.name).map { it.toManga() }
+	}
+
 	suspend fun resolveIntent(intent: MangaIntent, withChapters: Boolean): Manga? = when {
 		intent.manga != null -> intent.manga.withCachedChaptersIfNeeded(withChapters)
 		intent.mangaId != 0L -> findMangaById(intent.mangaId, withChapters)

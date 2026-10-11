@@ -154,7 +154,7 @@ class AppSettings @Inject constructor(@ApplicationContext context: Context) {
 
 	@get:FloatRange(0.0, 1.0)
 	var readerDoublePagesSensitivity: Float
-		get() = prefs.getFloat(KEY_READER_DOUBLE_PAGES_SENSITIVITY, 0.5f)
+		get() = getFloatCompat(KEY_READER_DOUBLE_PAGES_SENSITIVITY, 0.5f).coerceIn(0f, 1f)
 		set(@FloatRange(0.0, 1.0) value) = prefs.edit { putFloat(KEY_READER_DOUBLE_PAGES_SENSITIVITY, value) }
 
 	val readerScreenOrientation: Int
@@ -179,6 +179,18 @@ class AppSettings @Inject constructor(@ApplicationContext context: Context) {
 	val isReaderOptimizationEnabled: Boolean
 		get() = prefs.getBoolean(KEY_READER_OPTIMIZE, false)
 
+	val isEInkFlashEnabled: Boolean
+		get() = prefs.getBoolean(KEY_EINK_FLASH, false)
+
+	val eInkFlashDuration: Int
+		get() = prefs.getInt(KEY_EINK_FLASH_DURATION, 300).coerceIn(100, 1000)
+
+	val eInkFlashEvery: Int
+		get() = prefs.getInt(KEY_EINK_FLASH_EVERY, 1).coerceAtLeast(1)
+
+	val eInkFlashColor: EInkFlashColor
+		get() = prefs.getEnumValue(KEY_EINK_FLASH_COLOR, EInkFlashColor.WHITE)
+
 	val readerControls: Set<ReaderControl>
 		get() = prefs.getStringSet(KEY_READER_CONTROLS, null)?.mapNotNullTo(EnumSet.noneOf(ReaderControl::class.java)) {
 			ReaderControl.entries.find(it)
@@ -200,6 +212,13 @@ class AppSettings @Inject constructor(@ApplicationContext context: Context) {
 	val trackerFrequencyFactor: Float
 		get() = prefs.getString(KEY_TRACKER_FREQUENCY, null)?.toFloatOrNull() ?: 1f
 
+	/**
+	 * How often to run a background sync, in hours, or `0` to only sync when local data changes.
+	 * Applied by SyncController.updateSyncSchedule.
+	 */
+	val syncPeriodHours: Int
+		get() = prefs.getString(KEY_SYNC_PERIOD, null)?.toIntOrNull() ?: SYNC_PERIOD_DEFAULT
+
 	val isTrackerNotificationsEnabled: Boolean
 		get() = prefs.getBoolean(KEY_TRACKER_NOTIFICATIONS, true)
 
@@ -210,8 +229,8 @@ class AppSettings @Inject constructor(@ApplicationContext context: Context) {
 		get() = prefs.getEnumValue(KEY_TRACKER_DOWNLOAD, TrackerDownloadStrategy.DISABLED)
 
 	var isTrackerUnstuckMigrationDone: Boolean
-		get() = prefs.getBoolean(KEY_TRACKER_UNSTUCK_MIGRATION_V3, false)
-		set(value) = prefs.edit { putBoolean(KEY_TRACKER_UNSTUCK_MIGRATION_V3, value) }
+		get() = prefs.getBoolean(KEY_TRACKER_UNSTUCK_MIGRATION_V4, false)
+		set(value) = prefs.edit { putBoolean(KEY_TRACKER_UNSTUCK_MIGRATION_V4, value) }
 
 	var isTrackerProgressRefreshDone: Boolean
 		get() = prefs.getBoolean(KEY_TRACKER_PROGRESS_REFRESH_V1, false)
@@ -310,6 +329,15 @@ class AppSettings @Inject constructor(@ApplicationContext context: Context) {
 	val isDynamicShortcutsEnabled: Boolean
 		get() = prefs.getBoolean(KEY_SHORTCUTS, true)
 
+	/**
+	 * Keep adult manga out of the launcher's long-press shortcuts.
+	 *
+	 * Defaults to `true`, unlike the other per-surface NSFW switches: the home screen is visible to
+	 * anyone holding the phone, not just to whoever opened the app.
+	 */
+	val isShortcutsNsfwDisabled: Boolean
+		get() = prefs.getBoolean(KEY_SHORTCUTS_NO_NSFW, true)
+
 	val isUnstableUpdatesAllowed: Boolean
 		get() = prefs.getBoolean(KEY_UPDATES_UNSTABLE, false)
 
@@ -343,7 +371,7 @@ class AppSettings @Inject constructor(@ApplicationContext context: Context) {
 		}
 
 	var sourcesSortOrder: SourcesSortOrder
-		get() = prefs.getEnumValue(KEY_SOURCES_ORDER, SourcesSortOrder.MANUAL)
+		get() = prefs.getEnumValue(KEY_SOURCES_ORDER, SourcesSortOrder.SCORE)
 		set(value) = prefs.edit { putEnumValue(KEY_SOURCES_ORDER, value) }
 
 	var isSourcesGridMode: Boolean
@@ -441,8 +469,8 @@ class AppSettings @Inject constructor(@ApplicationContext context: Context) {
 	var readerColorFilter: ReaderColorFilter?
 		get() = runCatching {
 			ReaderColorFilter(
-				brightness = prefs.getFloat(KEY_CF_BRIGHTNESS, ReaderColorFilter.EMPTY.brightness),
-				contrast = prefs.getFloat(KEY_CF_CONTRAST, ReaderColorFilter.EMPTY.contrast),
+				brightness = getFloatCompat(KEY_CF_BRIGHTNESS, ReaderColorFilter.EMPTY.brightness),
+				contrast = getFloatCompat(KEY_CF_CONTRAST, ReaderColorFilter.EMPTY.contrast),
 				isInverted = prefs.getBoolean(KEY_CF_INVERTED, ReaderColorFilter.EMPTY.isInverted),
 				isGrayscale = prefs.getBoolean(KEY_CF_GRAYSCALE, ReaderColorFilter.EMPTY.isGrayscale),
 				isBookBackground = prefs.getBoolean(KEY_CF_BOOK, ReaderColorFilter.EMPTY.isBookBackground),
@@ -529,7 +557,7 @@ class AppSettings @Inject constructor(@ApplicationContext context: Context) {
 
 	@get:FloatRange(from = 0.0, to = 1.0)
 	var readerAutoscrollSpeed: Float
-		get() = prefs.getFloat(KEY_READER_AUTOSCROLL_SPEED, 0f)
+		get() = getFloatCompat(KEY_READER_AUTOSCROLL_SPEED, 0f)
 		set(@FloatRange(from = 0.0, to = 1.0) value) = prefs.edit {
 			putFloat(
 				KEY_READER_AUTOSCROLL_SPEED,
@@ -603,21 +631,6 @@ class AppSettings @Inject constructor(@ApplicationContext context: Context) {
 
 	val isAutoLocalChaptersCleanupEnabled: Boolean
 		get() = prefs.getBoolean(KEY_CHAPTERS_CLEAR_AUTO, false)
-
-	val isEInkFlashEnabled: Boolean
-		get() = prefs.getBoolean(KEY_EINK_FLASH, false)
-
-	val eInkFlashDuration: Int
-		get() = prefs.getInt(KEY_EINK_FLASH_DURATION, 300).coerceIn(100, 1000)
-
-	val eInkFlashEvery: Int
-		get() = prefs.getInt(KEY_EINK_FLASH_EVERY, 1).coerceAtLeast(1)
-
-	val eInkFlashColor: EInkFlashColor
-		get() = prefs.getEnumValue(KEY_EINK_FLASH_COLOR, EInkFlashColor.WHITE)
-
-	val isTextInsideCover: Boolean
-    get() = prefs.getBoolean("pref_text_inside_cover", false)
 
 	fun isPagesCropEnabled(mode: ReaderMode): Boolean {
 		val rawValue = prefs.getStringSet(KEY_READER_CROP, emptySet())
@@ -701,17 +714,49 @@ class AppSettings @Inject constructor(@ApplicationContext context: Context) {
 		}
 	}
 
+	private fun getFloatCompat(key: String, defaultValue: Float): Float = try {
+		prefs.getFloat(key, defaultValue)
+	} catch (_: ClassCastException) {
+		val fixedValue = when (val rawValue = prefs.all[key]) {
+			is Number -> rawValue.toFloat()
+			is String -> rawValue.toFloatOrNull()
+			else -> null
+		}
+		if (fixedValue == null || !fixedValue.isFinite()) {
+			prefs.edit { remove(key) }
+			defaultValue
+		} else {
+			prefs.edit { putFloat(key, fixedValue) }
+			fixedValue
+		}
+	}
+
 	private fun normalizeImportedPreferences(values: Map<String, *>): Map<String, *> {
-		val rawValue = values[KEY_ACTIVE_SOURCE_PRESET] ?: return values
-		val fixedValue = when (rawValue) {
-			is Long -> return values
-			is Number -> rawValue.toLong()
-			is String -> rawValue.toLongOrNull() ?: return values
-			else -> return values
+		val result = HashMap(values)
+		result[KEY_ACTIVE_SOURCE_PRESET]?.let { rawValue ->
+			val fixedValue = when (rawValue) {
+				is Long -> rawValue
+				is Number -> rawValue.toLong()
+				is String -> rawValue.toLongOrNull()
+				else -> null
+			}
+			if (fixedValue != null) {
+				result[KEY_ACTIVE_SOURCE_PRESET] = fixedValue
+			}
 		}
-		return HashMap(values).apply {
-			put(KEY_ACTIVE_SOURCE_PRESET, fixedValue)
+		for (key in FLOAT_PREFERENCE_KEYS) {
+			result[key]?.let { rawValue ->
+				val fixedValue = when (rawValue) {
+					is Number -> rawValue.toFloat()
+					is String -> rawValue.toFloatOrNull()
+					else -> null
+				}
+				if (fixedValue != null && fixedValue.isFinite()) {
+					result[key] = fixedValue
+				}
+			}
 		}
+		return result
 	}
 
 	private fun isBackgroundNetworkRestricted(): Boolean {
@@ -723,6 +768,13 @@ class AppSettings @Inject constructor(@ApplicationContext context: Context) {
 	}
 
 	companion object {
+
+		private val FLOAT_PREFERENCE_KEYS = setOf(
+			KEY_READER_DOUBLE_PAGES_SENSITIVITY,
+			KEY_CF_BRIGHTNESS,
+			KEY_CF_CONTRAST,
+			KEY_READER_AUTOSCROLL_SPEED,
+		)
 
 		const val TRACK_HISTORY = "history"
 		const val TRACK_FAVOURITES = "favourites"
@@ -760,13 +812,14 @@ class AppSettings @Inject constructor(@ApplicationContext context: Context) {
 		const val KEY_TRACKER_ENABLED = "tracker_enabled"
 		const val KEY_TRACKER_WIFI_ONLY = "tracker_wifi"
 		const val KEY_TRACKER_FREQUENCY = "tracker_freq"
+		const val KEY_SYNC_PERIOD = "sync_period"
 		const val KEY_TRACK_SOURCES = "track_sources"
 		const val KEY_TRACK_CATEGORIES = "track_categories"
 		const val KEY_TRACK_WARNING = "track_warning"
 		const val KEY_TRACKER_NOTIFICATIONS = "tracker_notifications"
 		const val KEY_TRACKER_NO_NSFW = "tracker_no_nsfw"
 		const val KEY_TRACKER_DOWNLOAD = "tracker_download"
-		const val KEY_TRACKER_UNSTUCK_MIGRATION_V3 = "tracker_unstuck_migration_v3"
+		const val KEY_TRACKER_UNSTUCK_MIGRATION_V4 = "tracker_unstuck_migration_v4"
 		const val KEY_TRACKER_PROGRESS_REFRESH_V1 = "tracker_progress_refresh_v1"
 		const val KEY_NOTIFICATIONS_SETTINGS = "notifications_settings"
 		const val KEY_NOTIFICATIONS_SOUND = "notifications_sound"
@@ -823,6 +876,7 @@ class AppSettings @Inject constructor(@ApplicationContext context: Context) {
 		const val KEY_READER_BACKGROUND = "reader_background"
 		const val KEY_READER_SCREEN_ON = "reader_screen_on"
 		const val KEY_SHORTCUTS = "dynamic_shortcuts"
+		const val KEY_SHORTCUTS_NO_NSFW = "shortcuts_no_nsfw"
 		const val KEY_READER_TAP_ACTIONS = "reader_tap_actions"
 		const val KEY_READER_OPTIMIZE = "reader_optimize"
 		const val KEY_EINK_FLASH = "eink_flash"
@@ -907,8 +961,11 @@ class AppSettings @Inject constructor(@ApplicationContext context: Context) {
 		const val KEY_CLEAR_MANGA_DATA = "manga_data_clear"
 		const val KEY_STORAGE_USAGE = "storage_usage"
 		const val KEY_WEBVIEW_CLEAR = "webview_clear"
-		const val KEY_LINK_TG_REPORT = "tg_report"
-		const val KEY_LINK_WHATSAPP = "about_whatsapp"
+
+		/** Sync period options offered in settings, in hours. `0` means "only when local data changes". */
+		@JvmField
+		val SYNC_PERIODS = intArrayOf(0, 1, 6, 12, 24)
+		const val SYNC_PERIOD_DEFAULT = 6
 
 		// old keys are for migration only
 		private const val KEY_IMAGES_PROXY_OLD = "images_proxy"

@@ -14,6 +14,7 @@ import android.view.ViewPropertyAnimator
 import androidx.annotation.AttrRes
 import androidx.annotation.StyleRes
 import androidx.coordinatorlayout.widget.CoordinatorLayout
+import androidx.core.view.doOnNextLayout
 import androidx.core.view.isVisible
 import androidx.customview.view.AbsSavedState
 import androidx.interpolator.view.animation.FastOutLinearInInterpolator
@@ -35,7 +36,7 @@ private const val SLIDE_DOWN_ANIMATION_DURATION = 175L
 
 private const val MAX_ITEM_COUNT = 6
 
-class SlidingBottomNavigationView @JvmOverloads constructor(
+open class SlidingBottomNavigationView @JvmOverloads constructor(
 	context: Context,
 	attrs: AttributeSet? = null,
 	@AttrRes defStyleAttr: Int = materialR.attr.bottomNavigationStyle,
@@ -108,7 +109,15 @@ class SlidingBottomNavigationView @JvmOverloads constructor(
 		return measureSpec
 	}
 
-	override fun getMaxItemCount(): Int = MAX_ITEM_COUNT
+	override fun getMaxItemCount(): Int = maxItemCountOverride
+
+	/**
+	 * A getter with no backing field on purpose: [getMaxItemCount] is called from NavigationBarView's
+	 * constructor, before a subclass's property initialisers have run, so a `val` would still read
+	 * zero there.
+	 */
+	protected open val maxItemCountOverride: Int
+		get() = MAX_ITEM_COUNT
 
 	@SuppressLint("RestrictedApi")
 	override fun createNavigationBarMenuView(context: Context) = BottomNavigationMenuView(context)
@@ -167,6 +176,9 @@ class SlidingBottomNavigationView @JvmOverloads constructor(
 		currentState = STATE_DOWN
 		val target = measureHeight()
 		if (target == 0) {
+			// No height yet - typically hidden during state restore, before the first layout. Nothing
+			// to animate from, so apply the end position once the height is known instead.
+			doOnNextLayout { applyHiddenPosition() }
 			return
 		}
 		val bottomMargin = (layoutParams as? ViewGroup.MarginLayoutParams)?.bottomMargin ?: 0
@@ -175,6 +187,23 @@ class SlidingBottomNavigationView @JvmOverloads constructor(
 			SLIDE_DOWN_ANIMATION_DURATION,
 			FastOutLinearInInterpolator(),
 		)
+	}
+
+	/**
+	 * Jumps to the hidden position without animating, for when [hide] was asked for before there was a
+	 * height to slide by. Checks the state again because it may have changed while waiting for layout.
+	 */
+	private fun applyHiddenPosition() {
+		if (currentState != STATE_DOWN) {
+			return
+		}
+		val target = measureHeight()
+		if (target == 0) {
+			return
+		}
+		val bottomMargin = (layoutParams as? ViewGroup.MarginLayoutParams)?.bottomMargin ?: 0
+		// setTranslationY is overridden to ignore writes while down, so bypass it.
+		super.setTranslationY((target + bottomMargin).toFloat())
 	}
 
 	fun showOrHide(show: Boolean) {

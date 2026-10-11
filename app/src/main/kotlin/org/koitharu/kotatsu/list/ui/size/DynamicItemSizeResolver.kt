@@ -10,6 +10,7 @@ import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import org.koitharu.kotatsu.R
 import org.koitharu.kotatsu.core.prefs.AppSettings
+import org.koitharu.kotatsu.core.util.ext.getThemeResId
 import org.koitharu.kotatsu.history.ui.util.ReadingProgressView
 import kotlin.math.roundToInt
 
@@ -102,10 +103,13 @@ class DynamicItemSizeResolver(
 		}
 
 		private fun TextView.adjustTextAppearance(width: Int) {
+			// Resolved from the theme rather than referenced directly: the Expressive theme draws grid
+			// titles over the cover art and supplies its own appearance, which this swap would otherwise
+			// overwrite every time the grid size changed.
 			val textAppearanceResId = if (width < widthThreshold) {
-				R.style.TextAppearance_Kotatsu_GridTitle_Small
+				context.getThemeResId(R.attr.gridTitleTextAppearanceSmall, R.style.TextAppearance_Kotatsu_GridTitle_Small)
 			} else {
-				R.style.TextAppearance_Kotatsu_GridTitle
+				context.getThemeResId(R.attr.gridTitleTextAppearance, R.style.TextAppearance_Kotatsu_GridTitle)
 			}
 			if (textAppearanceResId != prevTextAppearance) {
 				prevTextAppearance = textAppearanceResId

@@ -25,6 +25,11 @@ class ExploreMenuProvider(
 				true
 			}
 
+			R.id.action_presets -> {
+				context.startActivity(android.content.Intent(context, SourcePresetListActivity::class.java))
+				true
+			}
+
 			else -> false
 		}
 	}

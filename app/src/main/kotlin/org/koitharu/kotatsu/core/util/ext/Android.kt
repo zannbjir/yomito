@@ -1,6 +1,7 @@
 package org.koitharu.kotatsu.core.util.ext
 
 import android.Manifest
+import android.animation.ValueAnimator
 import android.app.Activity
 import android.app.ActivityManager
 import android.app.ActivityManager.MemoryInfo
@@ -121,6 +122,10 @@ val Context.isAnimationsEnabled: Boolean
 	get() = animatorDurationScale > 0f
 
 fun ViewPropertyAnimator.applySystemAnimatorScale(context: Context): ViewPropertyAnimator = apply {
+	this.duration = (this.duration * context.animatorDurationScale).toLong()
+}
+
+fun ValueAnimator.applySystemAnimatorScale(context: Context): ValueAnimator = apply {
 	this.duration = (this.duration * context.animatorDurationScale).toLong()
 }
 

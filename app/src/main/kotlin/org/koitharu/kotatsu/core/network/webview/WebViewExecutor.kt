@@ -50,7 +50,6 @@ import javax.inject.Inject
 import javax.inject.Provider
 import javax.inject.Singleton
 import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
 import kotlin.ranges.contains
 
 @Singleton
@@ -91,15 +90,19 @@ class WebViewExecutor @Inject constructor(
 
             try {
                 if (baseUrl.isNullOrEmpty()) {
-                    return@withContext suspendCoroutine { cont ->
-                        webView.evaluateJavascript(script) { cont.resume(it.takeUnless { r -> r == "null" }) }
-                    }
+					return@withContext suspendCancellableCoroutine { cont ->
+						webView.evaluateJavascript(script) { result ->
+							if (cont.isActive) {
+								cont.resume(result.takeUnless { it == "null" })
+							}
+						}
+					}
                 }
 
                 val baseUri = android.net.Uri.parse(baseUrl)
                 val originalHost = baseUri.host
 
-                suspendCoroutine { continuation ->
+				suspendCancellableCoroutine { continuation ->
                     var hasResumed = false
 
                     val resumeOnce: (String?) -> Unit = { result ->
@@ -108,9 +111,18 @@ class WebViewExecutor @Inject constructor(
                             handler.removeCallbacksAndMessages(null)
                             // Immediately stop further loading/polling
                             webView.stopLoading()
-                            continuation.resume(result)
+							if (continuation.isActive) {
+								continuation.resume(result)
+							}
                         }
                     }
+
+					continuation.invokeOnCancellation {
+						hasResumed = true
+						handler.removeCallbacksAndMessages(null)
+						webView.post { webView.stopLoading() }
+					}
+					if (!continuation.isActive) return@suspendCancellableCoroutine
 
                     val contentPoller = object : Runnable {
                         val startTime = System.currentTimeMillis()
@@ -175,8 +187,8 @@ class WebViewExecutor @Inject constructor(
                     }, timeoutMs)
                 }
             } finally {
-                // If already resumed, stopLoading() was called; this is a safety call.
-                webView.stopLoading()
+				handler.removeCallbacksAndMessages(null)
+				destroyEvaluatedWebView(webView)
             }
         }
     }
@@ -417,6 +429,25 @@ class WebViewExecutor @Inject constructor(
         it.prepareDetachedParserViewport()
         webViewCached = WeakReference(it)
     }
+
+	/**
+	 * Evaluation WebViews are intentionally one-shot. Keeping the loaded document alive after returning lets
+	 * media, animation frames, workers, and page timers continue consuming power in the background.
+	 */
+	@MainThread
+	private fun destroyEvaluatedWebView(webView: WebView) {
+		if (webViewCached?.get() === webView) {
+			webViewCached = null
+		}
+		runCatching { webView.stopLoading() }
+		runCatching { webView.onPause() }
+		webView.webViewClient = WebViewClient()
+		webView.webChromeClient = null
+		runCatching { webView.loadUrl("about:blank") }
+		runCatching { webView.clearHistory() }
+		runCatching { webView.removeAllViews() }
+		runCatching { webView.destroy() }
+	}
 
 	private fun MangaSource.getUserAgent(): String? {
 		val repository = mangaRepositoryFactoryProvider.get().create(this) as? ParserMangaRepository

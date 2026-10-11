@@ -1,64 +1,55 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-
-	<!--AlertDialog-->
-
-	<style name="ThemeOverlay.Kotatsu.AlertDialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+<style name="ThemeOverlay.Kotatsu.AlertDialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
 		<item name="alertDialogStyle">@style/AlertDialog.Kotatsu</item>
 		<item name="dialogCornerRadius">@dimen/m3_alert_dialog_corner_size</item>
 	</style>
-
-	<style name="AlertDialog.Kotatsu" parent="MaterialAlertDialog.Material3">
+<style name="AlertDialog.Kotatsu" parent="MaterialAlertDialog.Material3">
 		<item name="android:background">@drawable/m3_popup_background</item>
 	</style>
-
-	<!-- Bottom sheet -->
-
-	<style name="ThemeOverlay.Kotatsu.BottomSheetDialog" parent="ThemeOverlay.Material3.BottomSheetDialog">
+<style name="ThemeOverlay.Kotatsu.BottomSheetDialog" parent="ThemeOverlay.Material3.BottomSheetDialog">
 		<item name="android:windowAnimationStyle">@style/Animation.Kotatsu.BottomSheetDialog</item>
 		<item name="bottomSheetStyle">@style/Widget.Kotatsu.BottomSheet.Modal</item>
 	</style>
-
-	<style name="ThemeOverlay.Kotatsu.SideSheetDialog" parent="ThemeOverlay.Material3.SideSheetDialog" />
+<style name="ThemeOverlay.Kotatsu.SideSheetDialog" parent="ThemeOverlay.Material3.SideSheetDialog" />
 
 	<style name="Widget.Kotatsu.BottomSheet.Modal" parent="Widget.Material3.BottomSheet.Modal">
 		<item name="paddingBottomSystemWindowInsets">false</item>
 	</style>
-
-	<style name="Widget.Kotatsu.BottomSheet.DragHandle" parent="Widget.Material3.BottomSheet.DragHandle">
+<style name="Widget.Kotatsu.BottomSheet.DragHandle" parent="Widget.Material3.BottomSheet.DragHandle">
 		<!-- Fix weird bottom padding -->
 		<item name="android:paddingBottom">0dp</item>
 	</style>
-
-	<style name="Widget.Kotatsu.Spinner.DropDown" parent="Widget.AppCompat.Spinner.DropDown">
+<style name="Widget.Kotatsu.Spinner.DropDown" parent="Widget.AppCompat.Spinner.DropDown">
 		<item name="android:popupBackground">@drawable/m3_spinner_popup_background</item>
 		<item name="android:elevation">8dp</item>
 		<item name="android:popupElevation">3dp</item>
 	</style>
-
-	<style name="Animation.Kotatsu.BottomSheetDialog" parent="Animation.AppCompat.Dialog">
+<style name="Animation.Kotatsu.BottomSheetDialog" parent="Animation.AppCompat.Dialog">
 		<item name="android:windowEnterAnimation">@anim/bottom_sheet_slide_in</item>
 		<item name="android:windowExitAnimation">@anim/bottom_sheet_slide_out</item>
 	</style>
-
-	<!-- Widget styles -->
-
-	<style name="Widget.Kotatsu.SearchView" parent="@style/Widget.AppCompat.SearchView">
+<style name="Widget.Kotatsu.AutoCompleteTextView" parent="Widget.AppCompat.AutoCompleteTextView">
+		<item name="android:gravity">center_vertical|start</item>
+	</style>
+<style name="Widget.Kotatsu.SearchView" parent="@style/Widget.AppCompat.SearchView">
 		<item name="iconifiedByDefault">false</item>
 		<item name="searchIcon">@null</item>
 		<item name="queryBackground">@null</item>
 		<item name="android:textAppearance">@style/TextAppearance.Kotatsu.SearchView</item>
 		<item name="android:textSize">18sp</item>
 	</style>
-
-	<style name="Widget.Kotatsu.CircularProgressIndicator" parent="Widget.Material3.CircularProgressIndicator">
+<style name="Widget.Kotatsu.SearchBar.AppBarWithSearch" parent="Widget.Material3Expressive.SearchBar.AppBarWithSearch">
+		<item name="hideNavigationIcon">false</item>
+		<item name="defaultMarginsEnabled">true</item>
+		<item name="adaptiveMaxWidthEnabled">false</item>
+	</style>
+<style name="Widget.Kotatsu.CircularProgressIndicator" parent="Widget.Material3.CircularProgressIndicator">
 		<item name="trackCornerRadius">@dimen/mtrl_progress_indicator_full_rounded_corner_radius</item>
 	</style>
-
-	<style name="Widget.Kotatsu.LinearProgressIndicator" parent="Widget.Material3.LinearProgressIndicator">
+<style name="Widget.Kotatsu.LinearProgressIndicator" parent="Widget.Material3.LinearProgressIndicator">
 		<item name="trackCornerRadius">@dimen/mtrl_progress_indicator_full_rounded_corner_radius</item>
 	</style>
-
-	<style name="Widget.Kotatsu.Chip" parent="Widget.Material3.Chip.Suggestion" />
+<style name="Widget.Kotatsu.Chip" parent="Widget.Material3.Chip.Suggestion" />
 
 	<style name="Widget.Kotatsu.Chip.Filter" parent="Widget.Material3.Chip.Filter" />
 
@@ -69,24 +60,145 @@
 		<item name="closeIcon">@drawable/ic_expand_more</item>
 		<item name="chipIconVisible">true</item>
 	</style>
+<style name="ShapeAppearance.Kotatsu.DetailsChip.Expressive" parent="">
+		<item name="cornerFamily">rounded</item>
+		<item name="cornerSize">20dp</item>
+	</style>
+<style name="TextAppearance.Kotatsu.Details.Title.Expressive" parent="TextAppearance.Material3.TitleLarge">
+		<item name="fontFamily">@font/google_sans_bold</item>
+		<item name="android:fontFamily">@font/google_sans_bold</item>
+		<item name="android:textStyle">bold</item>
+	</style>
+<style name="TextAppearance.Kotatsu.Details.MetadataLabel.Expressive" parent="TextAppearance.Material3.TitleSmall">
+		<item name="fontFamily">@font/google_sans_bold</item>
+		<item name="android:fontFamily">@font/google_sans_bold</item>
+		<item name="android:textStyle">bold</item>
+	</style>
+<style name="TextAppearance.Kotatsu.Details.Chip.Expressive" parent="TextAppearance.Material3.LabelLarge">
+		<item name="fontFamily">@font/google_sans_bold</item>
+		<item name="android:fontFamily">@font/google_sans_bold</item>
+		<item name="android:textStyle">bold</item>
+	</style>
+<style name="Widget.Kotatsu.Details.FavoriteChip.Expressive" parent="Widget.Kotatsu.Chip.Dropdown">
+		<item name="android:textAppearance">@style/TextAppearance.Kotatsu.Details.Chip.Expressive</item>
+		<item name="android:textColor">?attr/colorOnPrimaryContainer</item>
+		<item name="chipBackgroundColor">?attr/colorPrimaryContainer</item>
+		<item name="chipIconTint">?attr/colorOnPrimaryContainer</item>
+		<item name="closeIconTint">?attr/colorOnPrimaryContainer</item>
+		<item name="chipStrokeWidth">0dp</item>
+		<item name="chipMinHeight">40dp</item>
+		<item name="shapeAppearance">@style/ShapeAppearance.Kotatsu.DetailsChip.Expressive</item>
+	</style>
+<style name="Widget.Kotatsu.Details.TagChip.Expressive" parent="Widget.Kotatsu.Chip">
+		<item name="android:textAppearance">@style/TextAppearance.Kotatsu.Details.Chip.Expressive</item>
+		<item name="android:textColor">?attr/colorOnSecondaryContainer</item>
+		<item name="chipBackgroundColor">?attr/colorSecondaryContainer</item>
+		<item name="chipStrokeWidth">0dp</item>
+		<item name="chipMinHeight">40dp</item>
+		<item name="shapeAppearance">@style/ShapeAppearance.Kotatsu.DetailsChip.Expressive</item>
+	</style>
+<style name="ShapeAppearance.Kotatsu.Details.ChapterCard" parent="">
+		<item name="cornerFamily">rounded</item>
+		<item name="cornerSize">20dp</item>
+	</style>
+<style name="Widget.Kotatsu.Details.ChapterCard" parent="Widget.Material3.CardView.Filled">
+		<item name="cardBackgroundColor">@android:color/transparent</item>
+		<item name="cardElevation">0dp</item>
+		<item name="strokeWidth">0dp</item>
+		<item name="shapeAppearanceOverlay">@style/ShapeAppearanceOverlay.Material3.Corner.None</item>
+	</style>
+<style name="Widget.Kotatsu.Details.ChapterCard.Expressive" parent="Widget.Material3.CardView.Filled">
+		<item name="cardBackgroundColor">?attr/colorSurfaceContainerLow</item>
+		<item name="cardElevation">0dp</item>
+		<item name="rippleColor">?attr/colorPrimary</item>
+		<item name="strokeWidth">0dp</item>
+		<item name="shapeAppearance">@style/ShapeAppearance.Kotatsu.Details.ChapterCard</item>
+	</style>
+<style name="Widget.Kotatsu.Details.ChapterGridCard" parent="Widget.Material3.CardView.Outlined" />
 
-	<style name="Widget.Kotatsu.Button.More" parent="Widget.Material3.Button.TextButton">
+	<style name="Widget.Kotatsu.Details.ChapterGridCard.Expressive" parent="Widget.Material3.CardView.Filled">
+		<item name="cardBackgroundColor">?attr/colorSurfaceContainer</item>
+		<item name="cardElevation">0dp</item>
+		<item name="rippleColor">?attr/colorPrimary</item>
+		<item name="strokeWidth">0dp</item>
+		<item name="shapeAppearance">@style/ShapeAppearance.Kotatsu.Details.ChapterCard</item>
+	</style>
+<style name="Widget.Kotatsu.Details.ChapterStatus.Bookmark" parent="">
+		<item name="android:layout_width">wrap_content</item>
+		<item name="android:layout_height">wrap_content</item>
+		<item name="android:layout_marginEnd">?android:attr/listPreferredItemPaddingEnd</item>
+	</style>
+<style name="Widget.Kotatsu.Details.ChapterStatus.Bookmark.Expressive">
+		<item name="android:layout_width">36dp</item>
+		<item name="android:layout_height">36dp</item>
+		<item name="android:layout_marginEnd">8dp</item>
+		<item name="android:background">@drawable/bg_chapter_bookmark_status</item>
+		<item name="android:padding">8dp</item>
+		<item name="android:tint">?attr/colorOnSecondaryContainer</item>
+	</style>
+<style name="Widget.Kotatsu.Details.ChapterStatus.Download" parent="Widget.Kotatsu.Details.ChapterStatus.Bookmark" />
+
+	<style name="Widget.Kotatsu.Details.ChapterStatus.Download.Expressive">
+		<item name="android:layout_width">36dp</item>
+		<item name="android:layout_height">36dp</item>
+		<item name="android:layout_marginEnd">8dp</item>
+		<item name="android:background">@drawable/bg_chapter_download_status</item>
+		<item name="android:padding">8dp</item>
+		<item name="android:tint">?attr/colorOnTertiaryContainer</item>
+	</style>
+<style name="Widget.Kotatsu.Details.ChapterStatus.New" parent="">
+		<item name="android:layout_width">wrap_content</item>
+		<item name="android:layout_height">wrap_content</item>
+		<item name="android:visibility">gone</item>
+	</style>
+<style name="Widget.Kotatsu.Details.ChapterStatus.New.Expressive">
+		<item name="android:layout_width">32dp</item>
+		<item name="android:layout_height">32dp</item>
+		<item name="android:layout_marginEnd">8dp</item>
+		<item name="android:background">@drawable/bg_chapter_new_status</item>
+		<item name="android:padding">7dp</item>
+		<item name="android:tint">?attr/colorOnErrorContainer</item>
+		<item name="android:visibility">gone</item>
+	</style>
+<style name="Widget.Kotatsu.Details.ReadSplitButton" parent="Widget.Material3.MaterialSplitButton" />
+
+	<style name="Widget.Kotatsu.Details.ReadSplitButton.Expressive" parent="Widget.Material3.MaterialSplitButton">
+		<item name="android:spacing">3dp</item>
+		<item name="android:paddingTop">6dp</item>
+		<item name="android:paddingBottom">6dp</item>
+	</style>
+<style name="Widget.Kotatsu.Details.ReadButton" parent="Widget.Material3.SplitButton.LeadingButton.Filled">
+		<item name="android:minWidth">@dimen/read_button_min_width</item>
+	</style>
+<style name="Widget.Kotatsu.Details.ReadButton.Expressive" parent="Widget.Material3.SplitButton.LeadingButton.Filled">
+		<item name="android:includeFontPadding">false</item>
+		<item name="android:minHeight">56dp</item>
+		<item name="android:minWidth">104dp</item>
+		<item name="android:textAppearance">@style/TextAppearance.Kotatsu.Details.Chip.Expressive</item>
+		<item name="iconPadding">8dp</item>
+		<item name="iconSize">22dp</item>
+	</style>
+<style name="Widget.Kotatsu.Details.ReadMenuButton" parent="Widget.Material3.SplitButton.IconButton.Filled" />
+
+	<style name="Widget.Kotatsu.Details.ReadMenuButton.Expressive" parent="Widget.Material3.SplitButton.IconButton.Filled">
+		<item name="android:minHeight">56dp</item>
+		<item name="android:minWidth">56dp</item>
+		<item name="iconSize">24dp</item>
+	</style>
+<style name="Widget.Kotatsu.Button.More" parent="Widget.Material3.Button.TextButton">
 		<item name="android:minWidth">48dp</item>
 	</style>
-
-	<style name="Widget.Kotatsu.Button.More.Small">
+<style name="Widget.Kotatsu.Button.More.Small">
 		<item name="android:insetTop">0dp</item>
 		<item name="android:insetBottom">0dp</item>
 		<item name="android:minHeight">42dp</item>
 	</style>
-
-	<style name="Widget.Kotatsu.ToggleButton" parent="Widget.Material3.Button.OutlinedButton">
+<style name="Widget.Kotatsu.ToggleButton" parent="Widget.Material3.Button.OutlinedButton">
 		<item name="android:checkable">true</item>
 		<item name="android:textAlignment">textStart</item>
 		<item name="iconPadding">16dp</item>
 	</style>
-
-	<style name="Widget.Kotatsu.ToggleButton.Vertical">
+<style name="Widget.Kotatsu.ToggleButton.Vertical">
 		<item name="android:textAlignment">center</item>
 		<item name="iconPadding">2dp</item>
 		<item name="android:singleLine">false</item>
@@ -97,19 +209,16 @@
 		<item name="android:paddingEnd">6dp</item>
 		<item name="android:elegantTextHeight">false</item>
 	</style>
-
-	<style name="Widget.Kotatsu.Slider.Wide" parent="Widget.Material3.Slider">
+<style name="Widget.Kotatsu.Slider.Wide" parent="Widget.Material3.Slider">
 		<item name="thumbHeight">48dp</item>
 		<item name="trackCornerSize">12dp</item>
 		<item name="trackHeight">40dp</item>
 	</style>
-
-	<style name="Widget.Kotatsu.RecyclerView" parent="">
+<style name="Widget.Kotatsu.RecyclerView" parent="">
 		<item name="android:scrollbarStyle">outsideOverlay</item>
 		<item name="android:clipToPadding">false</item>
 	</style>
-
-	<style name="Widget.Kotatsu.FastScroller" parent="">
+<style name="Widget.Kotatsu.FastScroller" parent="">
 		<item name="thumbColor">?colorTertiary</item>
 		<item name="bubbleColor">?colorTertiary</item>
 		<item name="bubbleTextColor">?colorOnTertiary</item>
@@ -117,8 +226,7 @@
 		<item name="bubbleSize">small</item>
 		<item name="scrollerOffset">@dimen/grid_spacing_outer</item>
 	</style>
-
-	<style name="Widget.Kotatsu.DotIndicator" parent="" />
+<style name="Widget.Kotatsu.DotIndicator" parent="" />
 
 	<style name="Widget.Kotatsu.BadgeView" parent="">
 		<item name="android:textColor">@macro/m3_comp_badge_large_label_text_color</item>
@@ -132,8 +240,7 @@
 		<item name="singleLine">true</item>
 		<item name="android:outlineProvider">background</item>
 	</style>
-
-	<style name="Widget.Kotatsu.ListItemTextView" parent="">
+<style name="Widget.Kotatsu.ListItemTextView" parent="">
 		<item name="android:textColor">@color/list_item_text_color</item>
 		<item name="backgroundFillColor">@color/list_item_background_color</item>
 		<item name="checkedDrawableStart">@drawable/ic_check</item>
@@ -149,8 +256,7 @@
 		<item name="android:paddingStart">?android:listPreferredItemPaddingStart</item>
 		<item name="android:paddingEnd">?android:listPreferredItemPaddingEnd</item>
 	</style>
-
-	<style name="Widget.Kotatsu.TwoLinesItemView" parent="">
+<style name="Widget.Kotatsu.TwoLinesItemView" parent="">
 		<item name="backgroundFillColor">@color/list_item_background_color</item>
 		<item name="shapeAppearance">?attr/shapeAppearanceCornerLarge</item>
 		<item name="android:insetRight">6dp</item>
@@ -162,8 +268,7 @@
 		<item name="titleTextAppearance">?attr/textAppearanceTitleSmall</item>
 		<item name="subtitleTextAppearance">?attr/textAppearanceBodySmall</item>
 	</style>
-
-	<style name="Widget.Kotatsu.ExploreButton" parent="Widget.Material3.Button.ElevatedButton.Icon">
+<style name="Widget.Kotatsu.ExploreButton" parent="Widget.Material3.Button.ElevatedButton.Icon">
 		<item name="android:minHeight">56dp</item>
 		<item name="android:singleLine">true</item>
 		<item name="shapeAppearance">?shapeAppearanceCornerExtraLarge</item>
@@ -182,13 +287,11 @@
 		<item name="android:outlineProvider">none</item>
 		<item name="elevation">24dp</item>
 	</style>
-
-	<style name="Widget.Kotatsu.ExploreButton.SplitStart" parent="Widget.Kotatsu.ExploreButton">
+<style name="Widget.Kotatsu.ExploreButton.SplitStart" parent="Widget.Kotatsu.ExploreButton">
 		<item name="shapeAppearanceOverlay">@style/ShapeAppearance.Kotatsu.SplitStart</item>
 		<item name="android:insetRight">0dp</item>
 	</style>
-
-	<style name="Widget.Kotatsu.ExploreButton.SplitEnd" parent="Widget.Kotatsu.ExploreButton">
+<style name="Widget.Kotatsu.ExploreButton.SplitEnd" parent="Widget.Kotatsu.ExploreButton">
 		<item name="shapeAppearanceOverlay">@style/ShapeAppearance.Kotatsu.SplitEnd</item>
 		<item name="android:insetLeft">0dp</item>
 		<item name="android:insetTop">0dp</item>
@@ -198,24 +301,20 @@
 		<item name="android:minHeight">0dp</item>
 		<item name="android:gravity">center</item>
 	</style>
-
-	<style name="ShapeAppearance.Kotatsu.SplitStart" parent="">
+<style name="ShapeAppearance.Kotatsu.SplitStart" parent="">
 		<item name="cornerSizeTopRight">0dp</item>
 		<item name="cornerSizeBottomRight">0dp</item>
 	</style>
-
-	<style name="ShapeAppearance.Kotatsu.SplitEnd" parent="">
+<style name="ShapeAppearance.Kotatsu.SplitEnd" parent="">
 		<item name="cornerSizeTopLeft">0dp</item>
 		<item name="cornerSizeBottomLeft">0dp</item>
 	</style>
-
-	<style name="Widget.Kotatsu.TextView.Indicator" parent="Widget.MaterialComponents.TextView">
+<style name="Widget.Kotatsu.TextView.Indicator" parent="Widget.MaterialComponents.TextView">
 		<item name="android:drawablePadding">12dp</item>
 		<item name="android:gravity">center_vertical</item>
 		<item name="android:textAppearance">?textAppearanceLabelMedium</item>
 	</style>
-
-	<style name="Widget.Kotatsu.TextView.Badge" parent="Widget.MaterialComponents.TextView">
+<style name="Widget.Kotatsu.TextView.Badge" parent="Widget.MaterialComponents.TextView">
 		<item name="android:background">@drawable/bg_chip</item>
 		<item name="android:gravity">center</item>
 		<item name="android:textAlignment">center</item>
@@ -226,34 +325,26 @@
 		<item name="android:textAppearance">?textAppearanceLabelMedium</item>
 		<item name="android:textColor">?colorOnBackground</item>
 	</style>
-
-	<style name="Widget.Kotatsu.ImageView.Cover" parent="Widget.MaterialComponents.ShapeableImageView">
+<style name="Widget.Kotatsu.ImageView.Cover" parent="Widget.MaterialComponents.ShapeableImageView">
 		<item name="aspectRationHeight">18</item>
 		<item name="aspectRationWidth">13</item>
 		<item name="android:scaleType">centerCrop</item>
 		<item name="allowRgb565">true</item>
 		<item name="trimImage">true</item>
 	</style>
-
-	<style name="ThemeOverlay.Kotatsu.MainToolbar" parent="">
+<style name="ThemeOverlay.Kotatsu.MainToolbar" parent="">
 		<item name="colorControlHighlight">@color/selector_overlay</item>
 	</style>
-
-	<style name="ThemeOverlay.Kotatsu.ActionMode" parent="">
+<style name="ThemeOverlay.Kotatsu.ActionMode" parent="">
 		<item name="colorOnSurface">?colorPrimary</item>
 		<item name="colorControlNormal">?colorPrimary</item>
 	</style>
-
-	<!-- TextAppearance -->
-
-	<style name="TextAppearance.Kotatsu.SearchView" parent="TextAppearance.Material3.SearchBar">
+<style name="TextAppearance.Kotatsu.SearchView" parent="TextAppearance.Material3.SearchBar">
 		<item name="android:textColor">?attr/colorOnSurfaceVariant</item>
 	</style>
-
-	<style name="TextAppearance.Widget.Menu" parent="TextAppearance.AppCompat.Menu">
+<style name="TextAppearance.Widget.Menu" parent="TextAppearance.AppCompat.Menu">
 		<item name="android:textColor">?attr/colorOnBackground</item>
 	</style>
-
 	<style name="TextAppearance.Kotatsu.Preference.Secondary" parent="TextAppearance.Material3.BodySmall" />
 
 	<style name="TextAppearance.Kotatsu.GridTitle" parent="TextAppearance.Material3.TitleSmall" />
@@ -265,8 +356,15 @@
 		<item name="android:lineHeight" tools:ignore="NewApi">14sp</item>
 	</style>
 
-	<!-- Grid-cover titles are overlaid on a dark scrim, so they are light with a soft shadow.
-	     Used only by the manga grid card (applied via ItemSizeResolver). -->
+<style name="TextAppearance.Kotatsu.Shadowed" parent="TextAppearance.Material3.LabelLarge">
+		<item name="fontFamily">@font/google_sans_bold</item>
+		<item name="android:fontFamily">@font/google_sans_bold</item>
+		<item name="android:shadowColor">#80000000</item>
+		<item name="android:shadowDx">0</item>
+		<item name="android:shadowDy">1</item>
+		<item name="android:shadowRadius">3</item>
+	</style>
+
 	<style name="TextAppearance.Kotatsu.GridTitle.Overlay">
         <item name="android:textColor">@android:color/white</item>
         <item name="android:textStyle">bold</item>
@@ -287,75 +385,179 @@
 		<item name="android:shadowRadius">3</item>
 	</style>
 
-	<!-- Shapes -->
-
-	<!-- PixelPlayer M3 shape scale: small=8dp, medium=16dp, large=24dp -->
-	<style name="ShapeAppearance.Kotatsu.CornerSmall" parent="ShapeAppearance.Material3.Corner.Small">
+	<style name="TextAppearance.Kotatsu.Shadowed.NavLabel" parent="TextAppearance.Material3.LabelMedium">
+		<item name="fontFamily">@font/google_sans_bold</item>
+		<item name="android:fontFamily">@font/google_sans_bold</item>
+		<item name="android:shadowColor">#80000000</item>
+		<item name="android:shadowDx">0</item>
+		<item name="android:shadowDy">1</item>
+		<item name="android:shadowRadius">3</item>
+	</style>
+<style name="Widget.Kotatsu.ExtendedFab.Continue" parent="Widget.Material3.ExtendedFloatingActionButton.Primary">
+		<item name="android:textAppearance">@style/TextAppearance.Kotatsu.Shadowed</item>
+		<item name="android:includeFontPadding">false</item>
+	</style>
+<style name="Widget.Kotatsu.BottomNavigationView.Expressive" parent="Widget.Material3Expressive.BottomNavigationView">
+		<item name="itemTextAppearanceActive">@style/TextAppearance.Kotatsu.Shadowed.NavLabel</item>
+		<item name="itemTextAppearanceInactive">@style/TextAppearance.Kotatsu.Shadowed.NavLabel</item>
+		<item name="horizontalItemTextAppearanceActive">@style/TextAppearance.Kotatsu.Shadowed.NavLabel</item>
+		<item name="horizontalItemTextAppearanceInactive">@style/TextAppearance.Kotatsu.Shadowed.NavLabel</item>
+	</style>
+<style name="Widget.Kotatsu.TextView" parent="Widget.MaterialComponents.TextView">
+		<item name="android:includeFontPadding">false</item>
+	</style>
+<style name="Widget.Kotatsu.Expressive.Button" parent="Widget.Material3Expressive.Button">
+		<item name="android:includeFontPadding">false</item>
+	</style>
+<style name="Widget.Kotatsu.Expressive.Button.Tonal" parent="Widget.Material3Expressive.Button.TonalButton">
+		<item name="android:includeFontPadding">false</item>
+	</style>
+<style name="Widget.Kotatsu.Expressive.Button.Outlined" parent="Widget.Material3Expressive.Button.OutlinedButton">
+		<item name="android:includeFontPadding">false</item>
+	</style>
+<style name="Widget.Kotatsu.Expressive.Button.Elevated" parent="Widget.Material3Expressive.Button.ElevatedButton">
+		<item name="android:includeFontPadding">false</item>
+	</style>
+<style name="Widget.Kotatsu.Expressive.Button.Text" parent="Widget.Material3Expressive.Button.TextButton">
+		<item name="android:includeFontPadding">false</item>
+	</style>
+<style name="Widget.Kotatsu.Expressive.Button.Text.Dialog" parent="Widget.Material3Expressive.Button.TextButton.Dialog">
+		<item name="android:includeFontPadding">false</item>
+	</style>
+<style name="Widget.Kotatsu.Expressive.Button.Text.Snackbar" parent="Widget.Material3Expressive.Button.TextButton.Snackbar">
+		<item name="android:includeFontPadding">false</item>
+	</style>
+<style name="Widget.Kotatsu.Expressive.Chip.Assist" parent="Widget.Material3.Chip.Assist">
+		<item name="android:includeFontPadding">false</item>
+	</style>
+<style name="Widget.Kotatsu.Expressive.Chip.Filter" parent="Widget.Material3.Chip.Filter">
+		<item name="android:includeFontPadding">false</item>
+	</style>
+<style name="Widget.Kotatsu.Expressive.Chip.Suggestion" parent="Widget.Material3.Chip.Suggestion">
+		<item name="android:includeFontPadding">false</item>
+	</style>
+<style name="Widget.Kotatsu.Expressive.TabLayout" parent="Widget.Material3.TabLayout">
+		<item name="android:includeFontPadding">false</item>
+	</style>
+<style name="Widget.Kotatsu.Expressive.ExtendedFab" parent="Widget.Material3Expressive.ExtendedFloatingActionButton.Medium">
+		<item name="android:includeFontPadding">false</item>
+	</style>
+<style name="TextAppearance.Kotatsu.Sans.DisplayLarge" parent="TextAppearance.Material3.DisplayLarge">
+		<item name="fontFamily">@font/google_sans_bold</item>
+		<item name="android:fontFamily">@font/google_sans_bold</item>
+	</style>
+<style name="TextAppearance.Kotatsu.Sans.DisplayMedium" parent="TextAppearance.Material3.DisplayMedium">
+		<item name="fontFamily">@font/google_sans_bold</item>
+		<item name="android:fontFamily">@font/google_sans_bold</item>
+	</style>
+<style name="TextAppearance.Kotatsu.Sans.DisplaySmall" parent="TextAppearance.Material3.DisplaySmall">
+		<item name="fontFamily">@font/google_sans_bold</item>
+		<item name="android:fontFamily">@font/google_sans_bold</item>
+	</style>
+<style name="TextAppearance.Kotatsu.Sans.HeadlineLarge" parent="TextAppearance.Material3.HeadlineLarge">
+		<item name="fontFamily">@font/google_sans_bold</item>
+		<item name="android:fontFamily">@font/google_sans_bold</item>
+	</style>
+<style name="TextAppearance.Kotatsu.Sans.HeadlineMedium" parent="TextAppearance.Material3.HeadlineMedium">
+		<item name="fontFamily">@font/google_sans_bold</item>
+		<item name="android:fontFamily">@font/google_sans_bold</item>
+	</style>
+<style name="TextAppearance.Kotatsu.Sans.HeadlineSmall" parent="TextAppearance.Material3.HeadlineSmall">
+		<item name="fontFamily">@font/google_sans_bold</item>
+		<item name="android:fontFamily">@font/google_sans_bold</item>
+	</style>
+<style name="TextAppearance.Kotatsu.Sans.TitleLarge" parent="TextAppearance.Material3.TitleLarge">
+		<item name="fontFamily">@font/google_sans_medium</item>
+		<item name="android:fontFamily">@font/google_sans_medium</item>
+	</style>
+<style name="TextAppearance.Kotatsu.Sans.TitleMedium" parent="TextAppearance.Material3.TitleMedium">
+		<item name="fontFamily">@font/google_sans_medium</item>
+		<item name="android:fontFamily">@font/google_sans_medium</item>
+	</style>
+<style name="TextAppearance.Kotatsu.Sans.TitleSmall" parent="TextAppearance.Material3.TitleSmall">
+		<item name="fontFamily">@font/google_sans_medium</item>
+		<item name="android:fontFamily">@font/google_sans_medium</item>
+	</style>
+<style name="TextAppearance.Kotatsu.Sans.BodyLarge" parent="TextAppearance.Material3.BodyLarge">
+		<item name="fontFamily">@font/google_sans</item>
+		<item name="android:fontFamily">@font/google_sans</item>
+	</style>
+<style name="TextAppearance.Kotatsu.Sans.BodyMedium" parent="TextAppearance.Material3.BodyMedium">
+		<item name="fontFamily">@font/google_sans</item>
+		<item name="android:fontFamily">@font/google_sans</item>
+	</style>
+<style name="TextAppearance.Kotatsu.Sans.BodySmall" parent="TextAppearance.Material3.BodySmall">
+		<item name="fontFamily">@font/google_sans</item>
+		<item name="android:fontFamily">@font/google_sans</item>
+	</style>
+<style name="TextAppearance.Kotatsu.Sans.LabelLarge" parent="TextAppearance.Material3.LabelLarge">
+		<item name="fontFamily">@font/google_sans_medium</item>
+		<item name="android:fontFamily">@font/google_sans_medium</item>
+	</style>
+<style name="TextAppearance.Kotatsu.Sans.LabelMedium" parent="TextAppearance.Material3.LabelMedium">
+		<item name="fontFamily">@font/google_sans_medium</item>
+		<item name="android:fontFamily">@font/google_sans_medium</item>
+	</style>
+<style name="TextAppearance.Kotatsu.Sans.LabelSmall" parent="TextAppearance.Material3.LabelSmall">
+		<item name="fontFamily">@font/google_sans_medium</item>
+		<item name="android:fontFamily">@font/google_sans_medium</item>
+	</style>
+<style name="ShapeAppearance.Kotatsu.CornerSmall" parent="ShapeAppearance.Material3.Corner.Small">
 		<item name="cornerSize">8dp</item>
 	</style>
-
-
-	<!-- Shapes -->
-
-	<style name="ShapeAppearanceOverlay.Kotatsu.Cover" parent="">
-		<item name="cornerSize">12dp</item>
-	</style>
-
-	<style name="ShapeAppearanceOverlay.Kotatsu.Cover.Medium" parent="">
-		<item name="cornerSize">8dp</item>
-	</style>
-
-	<style name="ShapeAppearanceOverlay.Kotatsu.Cover.Small" parent="">
-		<item name="cornerSize">4dp</item>
-	</style>
-
-	<style name="ShapeAppearanceOverlay.Kotatsu.Cover.Large" parent="">
-		<item name="cornerSize">18dp</item>
-	</style>
-
-
-	<style name="ShapeAppearanceOverlay.Kotatsu.Circle" parent="">
+<style name="ShapeAppearanceOverlay.Kotatsu.Community.Score" parent="">
 		<item name="cornerFamily">rounded</item>
 		<item name="cornerSize">50%</item>
 	</style>
-
-	<style name="ShapeAppearanceOverlay.Material3.Corner.None" parent="">
+<style name="ShapeAppearanceOverlay.Kotatsu.Community.Comments" parent="">
+		<item name="cornerFamily">rounded</item>
+		<item name="cornerSizeTopLeft">18dp</item>
+		<item name="cornerSizeTopRight">18dp</item>
+		<item name="cornerSizeBottomRight">18dp</item>
+		<item name="cornerSizeBottomLeft">6dp</item>
+	</style>
+<style name="ShapeAppearanceOverlay.Kotatsu.Cover" parent="">
+		<item name="cornerSize">12dp</item>
+	</style>
+<style name="ShapeAppearanceOverlay.Kotatsu.Cover.Medium" parent="">
+		<item name="cornerSize">8dp</item>
+	</style>
+<style name="ShapeAppearanceOverlay.Kotatsu.Cover.Small" parent="">
+		<item name="cornerSize">4dp</item>
+	</style>
+<style name="ShapeAppearanceOverlay.Kotatsu.Cover.Large" parent="">
+		<item name="cornerSize">20dp</item>
+	</style>
+<style name="ShapeAppearanceOverlay.Kotatsu.Circle" parent="">
+		<item name="cornerFamily">rounded</item>
+		<item name="cornerSize">50%</item>
+	</style>
+<style name="ShapeAppearanceOverlay.Material3.Corner.None" parent="">
 		<item name="cornerSizeBottomLeft">0dp</item>
 		<item name="cornerSizeBottomRight">0dp</item>
 		<item name="cornerSizeTopLeft">0dp</item>
 		<item name="cornerSizeTopRight">0dp</item>
 	</style>
-
-	<!--Preferences-->
-
-	<style name="PreferenceThemeOverlay.Kotatsu">
+<style name="PreferenceThemeOverlay.Kotatsu">
 		<item name="singleLineTitle">false</item>
 	</style>
-
-	<style name="Preference.Slider" parent="Preference.SeekBarPreference.Material">
+<style name="Preference.Slider" parent="Preference.SeekBarPreference.Material">
 		<item name="android:layout">@layout/preference_slider</item>
 	</style>
-
-	<style name="Preference.MultiAutoCompleteTextView" parent="Preference.DialogPreference.EditTextPreference.Material">
+<style name="Preference.MultiAutoCompleteTextView" parent="Preference.DialogPreference.EditTextPreference.Material">
 		<item name="android:dialogLayout">@layout/preference_dialog_multiautocompletetextview</item>
 	</style>
-
-	<style name="Preference.AutoCompleteTextView" parent="Preference.DialogPreference.EditTextPreference.Material">
+<style name="Preference.AutoCompleteTextView" parent="Preference.DialogPreference.EditTextPreference.Material">
 		<item name="android:dialogLayout">@layout/preference_dialog_autocompletetextview</item>
 	</style>
-
-	<style name="Preference.SwitchPreferenceCompat.M3" parent="Preference.SwitchPreferenceCompat.Material">
+<style name="Preference.SwitchPreferenceCompat.M3" parent="Preference.SwitchPreferenceCompat.Material">
 		<item name="android:widgetLayout">@layout/preference_widget_material_switch</item>
 	</style>
-
-	<style name="Preference.ThemeChooser" parent="Preference.Material">
+<style name="Preference.ThemeChooser" parent="Preference.Material">
 		<item name="android:layout">@layout/preference_theme</item>
 		<item name="android:selectable">false</item>
 	</style>
-
-	<!-- Drawable -->
-
-	<style name="ProgressDrawable">
+<style name="ProgressDrawable">
 		<item name="android:fillAlpha">1</item>
 		<item name="android:fillColor">?attr/colorPrimary</item>
 		<item name="android:strokeColor">?attr/colorSurfaceVariant</item>
@@ -364,26 +566,45 @@
 		<item name="android:textSize">9sp</item>
 		<item name="autoFitTextSize">true</item>
 	</style>
-
-	<style name="FaviconDrawable">
+<style name="ProgressDrawable.Expressive">
+		<item name="android:fillAlpha">1</item>
+		<item name="android:fillColor">?attr/colorSecondaryContainer</item>
+		<item name="android:strokeColor">?attr/colorPrimary</item>
+		<item name="outlineColor">?attr/colorOutlineVariant</item>
+		<item name="android:textColor">?attr/colorOnSecondaryContainer</item>
+		<item name="strokeWidth">5dp</item>
+		<item name="android:textSize">9sp</item>
+		<item name="autoFitTextSize">true</item>
+	</style>
+<style name="Widget.Kotatsu.BadgeView.Expressive">
+		<item name="android:textColor">?attr/colorOnError</item>
+		<item name="backgroundColor">?attr/colorError</item>
+		<item name="shapeAppearance">@style/ShapeAppearanceOverlay.Kotatsu.Circle</item>
+		<item name="android:gravity">center</item>
+		<item name="android:padding">0dp</item>
+		<item name="android:minWidth">@dimen/card_indicator_size_glyph</item>
+		<item name="android:minHeight">@dimen/card_indicator_size_glyph</item>
+		<item name="android:textSize">11sp</item>
+		<item name="android:includeFontPadding">false</item>
+		<item name="android:elegantTextHeight">false</item>
+		<item name="android:fontFamily">@font/google_sans_bold</item>
+		<item name="fontFamily">@font/google_sans_bold</item>
+	</style>
+<style name="FaviconDrawable">
 		<item name="backgroundColor">?colorBackgroundFloating</item>
 		<item name="strokeColor">?colorOutline</item>
 	</style>
-
-	<style name="FaviconDrawable.Small">
+<style name="FaviconDrawable.Small">
 		<item name="strokeWidth">1dp</item>
 		<item name="cornerSize">8dp</item>
 	</style>
-
-	<style name="FaviconDrawable.Large">
+<style name="FaviconDrawable.Large">
 		<item name="strokeWidth">1dp</item>
 		<item name="cornerSize">12dp</item>
 	</style>
-
-	<style name="FaviconDrawable.Chip">
+<style name="FaviconDrawable.Chip">
 		<item name="strokeWidth">1px</item>
 		<item name="cornerSize">@dimen/chip_icon_corner</item>
 		<item name="drawableSize">@dimen/m3_chip_icon_size</item>
 	</style>
-
 </resources>

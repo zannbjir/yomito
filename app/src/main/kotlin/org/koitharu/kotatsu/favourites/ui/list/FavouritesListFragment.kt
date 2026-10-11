@@ -76,7 +76,7 @@ class FavouritesListFragment : MangaListFragment(), PopupMenu.OnMenuItemClickLis
 				mode?.finish()
 				true
 			}
-			
+
 			R.id.action_remove -> {
 				viewModel.removeFromFavourites(selectedItemsIds)
 				mode?.finish()

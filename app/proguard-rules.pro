@@ -30,13 +30,5 @@
 -keep class org.acra.config.DefaultRetryPolicy { *; }
 -keep class org.acra.attachment.DefaultAttachmentProvider { *; }
 -keep class org.acra.sender.JobSenderService
-
-
--keep class org.koitharu.kotatsu.parsers.site.** { *; }
--keepnames class org.koitharu.kotatsu.parsers.site.** { *; }
-
--keep class org.koitharu.kotatsu.parsers.model.** { *; }
--keepnames class org.koitharu.kotatsu.parsers.model.** { *; }
-
--keepattributes *Annotation*, InnerClasses
--keep class kotlinx.serialization.** { *; }
+# Loaded by ACRA through ServiceLoader (META-INF/services), so nothing references it directly.
+-keep class org.koitharu.kotatsu.core.util.SentryReportSenderFactory { *; }

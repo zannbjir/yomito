@@ -16,10 +16,12 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.isActive
 import org.intellij.lang.annotations.Language
 import org.koitharu.kotatsu.core.db.MangaQueryBuilder
+import org.koitharu.kotatsu.core.db.sourceCondition
 import org.koitharu.kotatsu.core.db.TABLE_FAVOURITES
 import org.koitharu.kotatsu.core.db.entity.MangaWithTags
 import org.koitharu.kotatsu.favourites.domain.model.Cover
 import org.koitharu.kotatsu.list.domain.ListFilterOption
+import org.koitharu.kotatsu.search.domain.ScreenFilterLog
 import org.koitharu.kotatsu.list.domain.ListSortOrder
 import org.koitharu.kotatsu.list.domain.ReadingProgress.Companion.PROGRESS_COMPLETED
 import org.koitharu.kotatsu.parsers.model.MangaParserSource
@@ -41,6 +43,21 @@ abstract class FavouritesDao : MangaQueryBuilder.ConditionCallback {
 	@Query("SELECT manga.* FROM favourites LEFT JOIN manga ON manga.manga_id = favourites.manga_id WHERE favourites.deleted_at = 0 AND (manga.title LIKE :query OR manga.alt_title LIKE :query) LIMIT :limit")
 	abstract suspend fun searchByTitle(query: String, limit: Int): List<MangaWithTags>
 
+	/**
+	 * Free-text match over everything that identifies an entry on the Favourites screen: its title, the
+	 * source it came from, and the category (list) it is filed under.
+	 */
+	@Transaction
+	@Query(
+		"SELECT manga.* FROM favourites LEFT JOIN manga ON manga.manga_id = favourites.manga_id " +
+			"WHERE favourites.deleted_at = 0 AND (" +
+			"manga.title LIKE :query OR manga.alt_title LIKE :query OR manga.source LIKE :query " +
+			"OR EXISTS(SELECT 1 FROM favourite_categories c WHERE c.category_id = favourites.category_id " +
+			"AND c.deleted_at = 0 AND c.title LIKE :query)" +
+			") GROUP BY favourites.manga_id ORDER BY favourites.created_at DESC LIMIT :limit",
+	)
+	abstract suspend fun filter(query: String, limit: Int): List<MangaWithTags>
+
 	@Transaction
 	@Query("SELECT manga.* FROM favourites LEFT JOIN manga ON manga.manga_id = favourites.manga_id WHERE favourites.deleted_at = 0 AND (manga.author LIKE :query) LIMIT :limit")
 	abstract suspend fun searchByAuthor(query: String, limit: Int): List<MangaWithTags>
@@ -52,8 +69,9 @@ abstract class FavouritesDao : MangaQueryBuilder.ConditionCallback {
 	fun observeAll(
 		order: ListSortOrder,
 		filterOptions: Set<ListFilterOption>,
-		limit: Int
-	): Flow<List<FavouriteManga>> = observeAll(0L, order, filterOptions, limit)
+		limit: Int,
+		searchQuery: String = "",
+	): Flow<List<FavouriteManga>> = observeAll(0L, order, filterOptions, limit, searchQuery)
 
 	@Transaction
 	@Query("SELECT * FROM favourites WHERE deleted_at = 0 ORDER BY created_at DESC LIMIT :limit OFFSET :offset")
@@ -73,11 +91,13 @@ abstract class FavouritesDao : MangaQueryBuilder.ConditionCallback {
 		categoryId: Long,
 		order: ListSortOrder,
 		filterOptions: Set<ListFilterOption>,
-		limit: Int
+		limit: Int,
+		searchQuery: String = "",
 	): Flow<List<FavouriteManga>> = observeAllImpl(
 		MangaQueryBuilder(TABLE_FAVOURITES, this)
 			.join("LEFT JOIN manga ON favourites.manga_id = manga.manga_id")
 			.where("deleted_at = 0")
+			.let { if (searchQuery.isEmpty()) it else it.where(searchCondition(searchQuery)) }
 			.where(
 				if (categoryId != 0L) {
 					"category_id = $categoryId"
@@ -263,6 +283,23 @@ abstract class FavouritesDao : MangaQueryBuilder.ConditionCallback {
 		ListSortOrder.UPDATED -> "IFNULL((SELECT last_chapter_date FROM tracks WHERE tracks.manga_id = manga.manga_id), 0) DESC"
 
 		else -> throw IllegalArgumentException("Sort order $sortOrder is not supported")
+	}
+
+	/**
+	 * Matches anything that identifies an entry on this screen: title, source, or the category it is
+	 * filed under.
+	 */
+	/**
+	 * The source part is resolved by [sourceCondition] rather than matched as text: `manga.source`
+	 * stores enum names, which display titles cannot be reshaped into.
+	 */
+	private fun searchCondition(query: String): String {
+		val pattern = sqlEscapeString("%$query%")
+		val sourceClause = sourceCondition(query)
+		ScreenFilterLog.condition("favourites", "LIKE $pattern $sourceClause")
+		return "(manga.title LIKE $pattern OR manga.alt_title LIKE $pattern $sourceClause" +
+			"OR EXISTS(SELECT 1 FROM favourite_categories c WHERE c.category_id = favourites.category_id " +
+			"AND c.deleted_at = 0 AND c.title LIKE $pattern))"
 	}
 
 	override fun getCondition(option: ListFilterOption): String? = when (option) {

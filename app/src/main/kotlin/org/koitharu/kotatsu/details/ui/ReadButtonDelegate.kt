@@ -2,6 +2,7 @@ package org.koitharu.kotatsu.details.ui
 
 import android.content.Context
 import android.graphics.Color
+import android.graphics.drawable.Animatable
 import android.text.style.DynamicDrawableSpan
 import android.text.style.ForegroundColorSpan
 import android.text.style.ImageSpan
@@ -25,7 +26,9 @@ import org.koitharu.kotatsu.core.model.isLocal
 import org.koitharu.kotatsu.core.nav.AppRouter
 import org.koitharu.kotatsu.core.nav.ReaderIntent
 import org.koitharu.kotatsu.core.util.ext.getThemeColor
+import org.koitharu.kotatsu.core.util.ext.getThemeResId
 import org.koitharu.kotatsu.core.util.ext.observe
+import org.koitharu.kotatsu.core.util.ext.setProgressIcon
 import org.koitharu.kotatsu.details.ui.model.HistoryInfo
 
 class ReadButtonDelegate(
@@ -39,6 +42,8 @@ class ReadButtonDelegate(
 
 	private val context: Context
 		get() = buttonRead.context
+	private val isExpressive = context.getThemeResId(R.attr.detailsReadLeadingButtonStyle, 0) ==
+		R.style.Widget_Kotatsu_Details_ReadButton_Expressive
 
 	override fun onClick(v: View) {
 		when (v.id) {
@@ -126,15 +131,31 @@ class ReadButtonDelegate(
 
 	private fun onHistoryChanged(isLoading: Boolean, info: HistoryInfo) {
 		val isChaptersLoading = isLoading && (info.totalChapters <= 0 || info.isChapterMissing)
-		buttonRead.setText(
+		buttonRead.text = when {
+			isChaptersLoading -> context.getString(R.string.loading_)
+			info.isIncognitoMode -> context.getString(R.string.incognito)
+			info.canContinue -> getContinueLabel(info)
+			else -> context.getString(R.string.read)
+		}
+		if (isExpressive) {
+			(buttonRead.icon as? Animatable)?.stop()
 			when {
-				isChaptersLoading -> R.string.loading_
-				info.isIncognitoMode -> R.string.incognito
-				info.canContinue -> R.string._continue
-				else -> R.string.read
-			},
-		)
+				isChaptersLoading -> buttonRead.setProgressIcon()
+				info.isIncognitoMode -> buttonRead.setIconResource(R.drawable.ic_incognito)
+				else -> buttonRead.setIconResource(R.drawable.ic_play)
+			}
+		}
 		splitButton.isEnabled = !isChaptersLoading && info.isValid
+	}
+
+	private fun getContinueLabel(info: HistoryInfo): CharSequence {
+		val base = context.getString(R.string._continue)
+		val chapterNumber = viewModel.getMangaOrNull()
+			?.chapters
+			?.filter { it.branch == viewModel.selectedBranchValue }
+			?.getOrNull(info.currentChapter)
+			?.numberString()
+		return if (chapterNumber.isNullOrEmpty()) base else "$base · $chapterNumber"
 	}
 
 	private fun Menu.populateBranchList() {

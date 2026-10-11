@@ -1,8 +1,12 @@
 package org.koitharu.kotatsu.settings
 
+import android.graphics.drawable.GradientDrawable
+import android.graphics.drawable.LayerDrawable
 import android.os.Bundle
 import android.view.View
 import androidx.annotation.StringRes
+import androidx.core.content.ContextCompat
+import androidx.core.graphics.drawable.DrawableCompat
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.preference.Preference
@@ -10,6 +14,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import org.koitharu.kotatsu.BuildConfig
 import org.koitharu.kotatsu.R
 import org.koitharu.kotatsu.core.prefs.AppSettings
+import org.koitharu.kotatsu.core.prefs.ColorScheme
 import org.koitharu.kotatsu.core.ui.BasePreferenceFragment
 import org.koitharu.kotatsu.core.util.ext.addMenuProvider
 import org.koitharu.kotatsu.core.util.ext.getQuantityStringSafe
@@ -34,6 +39,7 @@ class RootSettingsFragment : BasePreferenceFragment(0) {
 		bindPreferenceSummary("tracker", R.string.track_sources, R.string.notifications_settings)
 		bindPreferenceSummary("services", R.string.suggestions, R.string.sync, R.string.tracking)
 		findPreference<Preference>("about")?.summary = getString(R.string.app_version, BuildConfig.VERSION_NAME)
+		applyExpressiveIconBackgrounds()
 	}
 
 	override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -59,5 +65,43 @@ class RootSettingsFragment : BasePreferenceFragment(0) {
 
 	private fun bindPreferenceSummary(key: String, @StringRes vararg items: Int) {
 		findPreference<Preference>(key)?.summary = items.joinToString { getString(it) }
+	}
+
+	private fun applyExpressiveIconBackgrounds() {
+		if (settings.colorScheme != ColorScheme.EXPRESSIVE) {
+			return
+		}
+		val context = requireContext()
+		val iconColors = arrayOf(
+			"appearance" to R.color.settings_icon_appearance,
+			AppSettings.KEY_REMOTE_SOURCES to R.color.settings_icon_sources,
+			"reader" to R.color.settings_icon_reader,
+			"network" to R.color.settings_icon_network,
+			"downloads" to R.color.settings_icon_downloads,
+			"tracker" to R.color.settings_icon_tracker,
+			"services" to R.color.settings_icon_services,
+			"userdata" to R.color.settings_icon_backup,
+			"about" to R.color.settings_icon_about,
+		)
+		val density = resources.displayMetrics.density
+		val size = (40f * density).toInt()
+		val iconInset = (8f * density).toInt()
+		val foregroundColor = ContextCompat.getColor(context, android.R.color.white)
+
+		iconColors.forEach { (key, backgroundColorRes) ->
+			val preference = findPreference<Preference>(key) ?: return@forEach
+			val icon = preference.icon ?: return@forEach
+			val background = GradientDrawable().apply {
+				shape = GradientDrawable.OVAL
+				setColor(ContextCompat.getColor(context, backgroundColorRes))
+				setSize(size, size)
+			}
+			val foreground = DrawableCompat.wrap(icon.mutate()).also {
+				DrawableCompat.setTint(it, foregroundColor)
+			}
+			preference.icon = LayerDrawable(arrayOf(background, foreground)).apply {
+				setLayerInset(1, iconInset, iconInset, iconInset, iconInset)
+			}
+		}
 	}
 }

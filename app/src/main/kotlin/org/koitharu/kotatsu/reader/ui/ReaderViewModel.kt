@@ -422,7 +422,7 @@ class ReaderViewModel @Inject constructor(
             try {
                 intent.manga?.source?.let { captchaAutoResolveCoordinator.awaitActiveResolve(it) }
                 detailsLoadUseCase(intent, force = false)
-                .retryWhen { cause, attempt ->
+                    .retryWhen { cause, attempt ->
                         val cf = cause.findCloudFlareException()
                         attempt < MAX_DETAILS_VERIFICATION_RETRIES && cf is CloudFlareProtectedException &&
                             captchaAutoResolveCoordinator.resolveIfEnabled(cf)

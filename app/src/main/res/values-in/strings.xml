@@ -908,8 +908,6 @@
     <string name="flash_every">Flash setiap</string>
     <string name="flash_with">Flash dengan warna</string>
     <string name="milliseconds_pattern">%1$d md</string>
-    <string name="text_inside_cover_title">Teks di Dalam Sampul</string>
-    <string name="text_inside_cover_summary">Tampilkan judul manga di atas gambar sampul pada tampilan</string>
     <string name="widget_continue_reading">Lanjut Baca</string>
     <string name="widget_continue_reading_description">Lanjutkan baca manga terakhir dalam sekali klik</string>
     <string name="widget_continue_reading_empty">Belum ada riwayat bacaan</string>

@@ -18,7 +18,7 @@ abstract class TracksDao : MangaQueryBuilder.ConditionCallback {
 		"""
 		SELECT * FROM tracks
 		WHERE last_check_time = 0
-		    OR last_check_time <= :staleCheckTime
+			OR last_check_time <= :staleCheckTime
 			OR last_chapter_date = 0
 			OR last_chapter_date >= :minActivityTime
 			OR EXISTS(

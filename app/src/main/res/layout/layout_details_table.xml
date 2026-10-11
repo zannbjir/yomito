@@ -25,7 +25,7 @@
 		android:layout_marginTop="12dp"
 		android:singleLine="true"
 		android:text="@string/source"
-		android:textAppearance="?textAppearanceTitleSmall"
+		android:textAppearance="?attr/detailsMetadataLabelTextAppearance"
 		app:layout_constraintStart_toStartOf="@id/card_details"
 		app:layout_constraintTop_toBottomOf="@id/barrier_header" />
 
@@ -56,7 +56,7 @@
 		android:layout_marginTop="8dp"
 		android:singleLine="true"
 		android:text="@string/author"
-		android:textAppearance="?textAppearanceTitleSmall"
+		android:textAppearance="?attr/detailsMetadataLabelTextAppearance"
 		app:layout_constraintStart_toStartOf="@id/card_details"
 		app:layout_constraintTop_toBottomOf="@id/textView_source_label" />
 
@@ -82,7 +82,7 @@
 		android:layout_marginTop="8dp"
 		android:singleLine="true"
 		android:text="@string/translation"
-		android:textAppearance="?textAppearanceTitleSmall"
+		android:textAppearance="?attr/detailsMetadataLabelTextAppearance"
 		app:layout_constraintStart_toStartOf="@id/card_details"
 		app:layout_constraintTop_toBottomOf="@id/textView_author" />
 
@@ -110,7 +110,7 @@
 		android:layout_marginTop="8dp"
 		android:singleLine="true"
 		android:text="@string/rating"
-		android:textAppearance="?textAppearanceTitleSmall"
+		android:textAppearance="?attr/detailsMetadataLabelTextAppearance"
 		app:layout_constraintStart_toStartOf="@id/card_details"
 		app:layout_constraintTop_toBottomOf="@id/textView_translation_label" />
 
@@ -141,7 +141,7 @@
 		android:layout_marginTop="8dp"
 		android:singleLine="true"
 		android:text="@string/state"
-		android:textAppearance="?textAppearanceTitleSmall"
+		android:textAppearance="?attr/detailsMetadataLabelTextAppearance"
 		app:layout_constraintStart_toStartOf="@id/card_details"
 		app:layout_constraintTop_toBottomOf="@id/textView_rating_label" />
 
@@ -168,7 +168,7 @@
 		android:layout_marginTop="8dp"
 		android:singleLine="true"
 		android:text="@string/chapters"
-		android:textAppearance="?textAppearanceTitleSmall"
+		android:textAppearance="?attr/detailsMetadataLabelTextAppearance"
 		app:layout_constraintStart_toStartOf="@id/card_details"
 		app:layout_constraintTop_toBottomOf="@id/textView_state_label" />
 
@@ -195,7 +195,7 @@
 		android:layout_marginTop="8dp"
 		android:singleLine="true"
 		android:text="@string/on_device"
-		android:textAppearance="?textAppearanceTitleSmall"
+		android:textAppearance="?attr/detailsMetadataLabelTextAppearance"
 		app:layout_constraintStart_toStartOf="@id/card_details"
 		app:layout_constraintTop_toBottomOf="@id/textView_chapters_label" />
 
@@ -224,7 +224,7 @@
 		android:layout_marginTop="8dp"
 		android:singleLine="true"
 		android:text="@string/progress"
-		android:textAppearance="?textAppearanceTitleSmall"
+		android:textAppearance="?attr/detailsMetadataLabelTextAppearance"
 		app:layout_constraintStart_toStartOf="@id/card_details"
 		app:layout_constraintTop_toBottomOf="@id/textView_local_label" />
 

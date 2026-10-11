@@ -29,6 +29,7 @@ import org.koitharu.kotatsu.core.parser.MangaDataRepository
 import org.koitharu.kotatsu.core.parser.MangaRepository
 import org.koitharu.kotatsu.core.prefs.AppSettings
 import org.koitharu.kotatsu.core.prefs.ListMode
+import org.koitharu.kotatsu.core.prefs.SourceSettings
 import org.koitharu.kotatsu.core.util.ext.MutableEventFlow
 import org.koitharu.kotatsu.core.util.ext.call
 import org.koitharu.kotatsu.core.util.ext.findCloudFlareException
@@ -42,7 +43,6 @@ import org.koitharu.kotatsu.list.ui.MangaListViewModel
 import org.koitharu.kotatsu.list.ui.model.ButtonFooter
 import org.koitharu.kotatsu.list.ui.model.EmptyState
 import org.koitharu.kotatsu.list.ui.model.ListModel
-import org.koitharu.kotatsu.core.prefs.SourceSettings
 import org.koitharu.kotatsu.list.ui.model.LoadingFooter
 import org.koitharu.kotatsu.list.ui.model.LoadingState
 import org.koitharu.kotatsu.list.ui.model.toErrorFooter
@@ -90,7 +90,7 @@ open class RemoteListViewModel @Inject constructor(
 		observeListModeWithTriggers(),
 		listError,
 		hasNextPage,
-	    isResolvingCaptcha,
+		isResolvingCaptcha,
 	) { list, mode, error, hasNext, resolvingCaptcha ->
 		buildList(list?.size?.plus(2) ?: 2) {
 			when {
@@ -230,6 +230,7 @@ open class RemoteListViewModel @Inject constructor(
 			throw cfException
 		}
 	}
+
 
 	protected open fun createEmptyState(canResetFilter: Boolean) = EmptyState(
 		icon = R.drawable.ic_empty_common,
