@@ -2,17 +2,17 @@ package org.koitharu.kotatsu.list.ui.adapter
 
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
+import android.view.ViewGroup
 import androidx.appcompat.R as appcompatR
 import androidx.core.graphics.ColorUtils
-import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import com.hannesdorfmann.adapterdelegates4.dsl.adapterDelegateViewBinding
-import org.koitharu.kotatsu.core.util.ext.getThemeColor
-import org.koitharu.kotatsu.core.util.ext.getThemeDimensionPixelOffset
 import org.koitharu.kotatsu.R
 import org.koitharu.kotatsu.core.ui.list.AdapterDelegateClickListenerAdapter
 import org.koitharu.kotatsu.core.ui.list.OnListItemClickListener
+import org.koitharu.kotatsu.core.util.ext.getThemeColor
+import org.koitharu.kotatsu.core.util.ext.getThemeDimensionPixelOffset
 import org.koitharu.kotatsu.core.util.ext.setTooltipCompat
 import org.koitharu.kotatsu.databinding.ItemMangaGridBinding
 import org.koitharu.kotatsu.list.ui.ListModelDiffCallback.Companion.PAYLOAD_PROGRESS_CHANGED
@@ -29,28 +29,28 @@ fun mangaGridItemAD(
 ) {
 
 	AdapterDelegateClickListenerAdapter(this, clickListener).attach(itemView)
-	// The theme decides which of the two title views is visible: under the cover by default, over the
-	// artwork on Expressive. Size the one actually being drawn.
-	val titleView = if (binding.textViewTitleOverlay.isVisible) {
+
+	// Tema (skema warna ekspresif) yang menentukan judul digambar di atas sampul
+	// atau di bawahnya. Dulu ini dibaca dari preferensi mentah yang tidak pernah
+	// ditulis oleh layar Pengaturan, sehingga pilihan warna ekspresif tidak
+	// pernah berpengaruh.
+	val isTitleOverCover = binding.textViewTitleOverlay.isVisible
+
+	val titleView = if (isTitleOverCover) {
 		binding.textViewTitleOverlay
 	} else {
 		binding.textViewTitle
 	}
 	sizeResolver.attachToView(itemView, titleView, binding.progressView)
 
-	// Backdrop for the overlaid title: a short fade of a heavily darkened theme accent, tall enough
-	// for two lines, with its bottom corners following the cover's own rounding. Only the theme that
-	// draws titles over the artwork shows it, which is the same condition that reveals that title.
-	val isTitleOverCover = binding.textViewTitleOverlay.isVisible
 	binding.viewScrim.isVisible = isTitleOverCover
-	// Spacing between cards, per theme. The layout's own margin and padding are both replaced here so
-	// there is a single source for the inset rather than two that have to agree.
+
 	val gridSpacing = context.getThemeDimensionPixelOffset(R.attr.mangaGridSpacing)
 	itemView.updateLayoutParams<ViewGroup.MarginLayoutParams> {
 		setMargins(0, 0, 0, 0)
 	}
-	// Nothing sits below the cover once the title is on the artwork, so that edge needs no inset.
 	itemView.setPadding(gridSpacing, gridSpacing, gridSpacing, if (isTitleOverCover) 0 else gridSpacing)
+
 	if (isTitleOverCover) {
 		val darkAccent = ColorUtils.blendARGB(
 			context.getThemeColor(appcompatR.attr.colorPrimary),
@@ -80,7 +80,6 @@ fun mangaGridItemAD(
 			if (item.isSaved) addIcon(R.drawable.ic_storage)
 			isVisible = iconsCount > 0
 		}
-		// Favourite moved out of the top-left icon strip and into the status cluster opposite it.
 		binding.imageViewFavourite.isVisible = item.isFavorite
 		binding.imageViewCover.setImageAsync(item.coverUrl, item.manga)
 		binding.badge.number = item.counter

@@ -8,16 +8,11 @@ import android.graphics.Shader
 import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.os.Bundle
-import android.renderscript.Allocation
-import android.renderscript.Element
-import android.renderscript.RenderScript
-import android.renderscript.ScriptIntrinsicBlur
 import android.text.SpannedString
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewTreeObserver
-import android.widget.ImageView
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.core.graphics.ColorUtils
@@ -133,15 +128,15 @@ import java.util.Locale
 
 @AndroidEntryPoint
 class DetailsActivity :
-    BaseActivity<ActivityDetailsBinding>(),
-    View.OnClickListener,
-    View.OnLayoutChangeListener,
-    ViewTreeObserver.OnDrawListener,
-    ChipsView.OnChipClickListener,
-    OnListItemClickListener<Bookmark>,
-    SwipeRefreshLayout.OnRefreshListener,
-    AuthorSpan.OnAuthorClickListener,
-    BottomSheetOwner {
+	BaseActivity<ActivityDetailsBinding>(),
+	View.OnClickListener,
+	View.OnLayoutChangeListener,
+	ViewTreeObserver.OnDrawListener,
+	ChipsView.OnChipClickListener,
+	OnListItemClickListener<Bookmark>,
+	SwipeRefreshLayout.OnRefreshListener,
+	AuthorSpan.OnAuthorClickListener,
+	BottomSheetOwner {
 
 	@Inject
 	lateinit var communityRating: CommunityRatingDelegate
@@ -149,18 +144,18 @@ class DetailsActivity :
 	@Inject
 	lateinit var shortcutManager: AppShortcutManager
 
-    @Inject
-    lateinit var coil: ImageLoader
+	@Inject
+	lateinit var coil: ImageLoader
 
-    @Inject
-    lateinit var settings: AppSettings
+	@Inject
+	lateinit var settings: AppSettings
 
-    private val viewModel: DetailsViewModel by viewModels()
-    private lateinit var menuProvider: DetailsMenuProvider
-    private lateinit var infoBinding: LayoutDetailsTableBinding
+	private val viewModel: DetailsViewModel by viewModels()
+	private lateinit var menuProvider: DetailsMenuProvider
+	private lateinit var infoBinding: LayoutDetailsTableBinding
 
-    override val bottomSheet: View?
-        get() = viewBinding.containerBottomSheet
+	override val bottomSheet: View?
+		get() = viewBinding.containerBottomSheet
 
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
@@ -232,316 +227,209 @@ class DetailsActivity :
 		addMenuProvider(menuProvider)
 	}
 
-    override fun onProvideAssistContent(outContent: AssistContent) {
-        super.onProvideAssistContent(outContent)
-        viewModel.getMangaOrNull()?.publicUrl?.toUriOrNull()?.let { outContent.webUri = it }
-    }
+	override fun onProvideAssistContent(outContent: AssistContent) {
+		super.onProvideAssistContent(outContent)
+		viewModel.getMangaOrNull()?.publicUrl?.toUriOrNull()?.let { outContent.webUri = it }
+	}
 
-    override fun isNsfwContent(): Flow<Boolean> = viewModel.manga.map { it?.contentRating == ContentRating.ADULT }
+	override fun isNsfwContent(): Flow<Boolean> = viewModel.manga.map { it?.contentRating == ContentRating.ADULT }
 
-    override fun onClick(v: View) {
-        when (v.id) {
-            R.id.textView_source -> {
-                val manga = viewModel.getMangaOrNull() ?: return
-                router.openList(manga.source, null, null)
-            }
-            R.id.textView_local -> {
-                val manga = viewModel.getMangaOrNull() ?: return
-                router.showLocalInfoDialog(manga)
-            }
-            R.id.chip_favorite -> {
-                val manga = viewModel.getMangaOrNull() ?: return
-                router.showFavoriteDialog(manga)
-            }
-            R.id.imageView_cover -> {
-                val manga = viewModel.getMangaOrNull() ?: return
-                router.openImage(
-                    url = viewModel.coverUrl.value ?: return,
-                    source = manga.source,
-                    preview = CoilMemoryCacheKey.from(viewBinding.imageViewCover),
-                    anchor = v,
-                )
-            }
-            R.id.button_description_more -> {
-                val tv = viewBinding.textViewDescription
-                if (tv.context.isAnimationsEnabled) {
-                    tv.parentView?.let { TransitionManager.beginDelayedTransition(it) }
-                }
-                if (tv.maxLines in 1 until Integer.MAX_VALUE) {
-                    tv.maxLines = Integer.MAX_VALUE
-                } else {
-                    tv.maxLines = resources.getInteger(R.integer.details_description_lines)
-                }
-            }
-            R.id.button_scrobbling_more -> {
-                router.showScrobblingSelectorSheet(
-                    manga = viewModel.getMangaOrNull() ?: return,
-                    scrobblerService = viewModel.scrobblingInfo.value.firstOrNull()?.scrobbler,
-                )
-            }
-            R.id.button_related_more -> {
-                val manga = viewModel.getMangaOrNull() ?: return
-                router.openRelated(manga)
-            }
-            R.id.textView_title -> {
-                val title = viewModel.getMangaOrNull()?.title?.nullIfEmpty() ?: return
-                buildAlertDialog(this) {
-                    setMessage(title)
-                    setNegativeButton(R.string.close, null)
-                    setPositiveButton(androidx.preference.R.string.copy) { _, _ ->
-                        copyToClipboard(getString(R.string.content_type_manga), title)
-                    }
-                }.show()
-            }
-        }
-    }
+	override fun onClick(v: View) {
+		when (v.id) {
+			R.id.textView_source -> {
+				val manga = viewModel.getMangaOrNull() ?: return
+				router.openList(manga.source, null, null)
+			}
 
-    override fun onAuthorClick(author: String) {
-        router.showAuthorDialog(author, viewModel.getMangaOrNull()?.source ?: return)
-    }
+			R.id.textView_local -> {
+				val manga = viewModel.getMangaOrNull() ?: return
+				router.showLocalInfoDialog(manga)
+			}
 
-    override fun onChipClick(chip: Chip, data: Any?) {
-        val tag = data as? MangaTag ?: return
-        router.showTagDialog(tag)
-    }
+			R.id.chip_favorite -> {
+				val manga = viewModel.getMangaOrNull() ?: return
+				router.showFavoriteDialog(manga)
+			}
 
-    override fun onItemClick(item: Bookmark, view: View) {
-        router.openReader(ReaderIntent.Builder(view.context).bookmark(item).incognito().build())
-        Toast.makeText(view.context, R.string.incognito_mode, Toast.LENGTH_SHORT).show()
-    }
+			R.id.imageView_cover -> {
+				val manga = viewModel.getMangaOrNull() ?: return
+				router.openImage(
+					url = viewModel.coverUrl.value ?: return,
+					source = manga.source,
+					preview = CoilMemoryCacheKey.from(viewBinding.imageViewCover),
+					anchor = v,
+				)
+			}
 
-    override fun onRefresh() {
-        viewModel.reload()
-    }
+			R.id.button_description_more -> {
+				val tv = viewBinding.textViewDescription
+				if (tv.context.isAnimationsEnabled) {
+					tv.parentView?.let {
+						TransitionManager.beginDelayedTransition(it)
+					}
+				}
+				if (tv.maxLines in 1 until Integer.MAX_VALUE) {
+					tv.maxLines = Integer.MAX_VALUE
+				} else {
+					tv.maxLines = resources.getInteger(R.integer.details_description_lines)
+				}
+			}
 
-    override fun onDraw() {
-        viewBinding.run {
-            buttonDescriptionMore.isVisible = textViewDescription.maxLines == Int.MAX_VALUE ||
-                textViewDescription.isTextTruncated
-        }
-    }
+			R.id.button_scrobbling_more -> {
+				router.showScrobblingSelectorSheet(
+					manga = viewModel.getMangaOrNull() ?: return,
+					scrobblerService = viewModel.scrobblingInfo.value.firstOrNull()?.scrobbler,
+				)
+			}
 
-    override fun onLayoutChange(
-        v: View?, left: Int, top: Int, right: Int, bottom: Int,
-        oldLeft: Int, oldTop: Int, oldRight: Int, oldBottom: Int
-    ) {
-        with(viewBinding) {
-            containerBottomSheet?.let { sheet ->
-                val peekHeight = BottomSheetBehavior.from(sheet).peekHeight
-                if (scrollView.paddingBottom != peekHeight) {
-                    scrollView.updatePadding(bottom = peekHeight)
-                }
-            }
-        }
-    }
+			R.id.button_related_more -> {
+				val manga = viewModel.getMangaOrNull() ?: return
+				router.openRelated(manga)
+			}
 
-    override fun onApplyWindowInsets(v: View, insets: WindowInsetsCompat): WindowInsetsCompat {
-        val typeMask = WindowInsetsCompat.Type.systemBars()
-        val barsInsets = insets.getInsets(typeMask)
+			R.id.textView_title -> {
+				val title = viewModel.getMangaOrNull()?.title?.nullIfEmpty() ?: return
+				buildAlertDialog(this) {
+					setMessage(title)
+					setNegativeButton(R.string.close, null)
+					setPositiveButton(androidx.preference.R.string.copy) { _, _ ->
+						copyToClipboard(getString(R.string.content_type_manga), title)
+					}
+				}.show()
+			}
+		}
+	}
 
-        // Geser guideline ke bawah status bar agar cover & judul tidak tertutup
-        viewBinding.guidelineStatusBar?.updateLayoutParams<androidx.constraintlayout.widget.ConstraintLayout.LayoutParams> {
-            guideBegin = barsInsets.top
-        }
+	override fun onAuthorClick(author: String) {
+		router.showAuthorDialog(author, viewModel.getMangaOrNull()?.source ?: return)
+	}
 
-        if (viewBinding.cardChapters != null) {
-            // landscape
-            viewBinding.cardChapters?.updateLayoutParams<ViewGroup.MarginLayoutParams> {
-                topMargin = barsInsets.top + resources.getDimensionPixelOffset(R.dimen.grid_spacing_outer)
-                marginEnd = barsInsets.end(v) + resources.getDimensionPixelOffset(R.dimen.side_card_offset)
-                bottomMargin = barsInsets.bottom + resources.getDimensionPixelOffset(R.dimen.side_card_offset)
-            }
-            viewBinding.scrollView.updatePaddingRelative(
-                bottom = barsInsets.bottom,
-                start = barsInsets.start(v),
-            )
-            viewBinding.appbar.updatePaddingRelative(start = barsInsets.start(v))
-            return insets.consume(v, typeMask, bottom = true, end = true)
-        } else {
-            viewBinding.appbar.updatePadding(top = barsInsets.top)
-            val tv = android.util.TypedValue()
-            theme.resolveAttribute(androidx.appcompat.R.attr.actionBarSize, tv, true)
-            val actionBarSize = android.util.TypedValue.complexToDimensionPixelSize(tv.data, resources.displayMetrics)
-            val totalTopOffset = barsInsets.top + actionBarSize
-            viewBinding.guidelineStatusBar?.updateLayoutParams<androidx.constraintlayout.widget.ConstraintLayout.LayoutParams> {
-                guideBegin = totalTopOffset
-            }
-            viewBinding.navbarDim?.updateLayoutParams { height = barsInsets.bottom }
-            return insets
-        }
-    }
+	override fun onChipClick(chip: Chip, data: Any?) {
+		val tag = data as? MangaTag ?: return
+		router.showTagDialog(tag)
+	}
 
-    private fun onFavoritesChanged(categories: Set<FavouriteCategory>) {
-        val chip = viewBinding.chipFavorite
-        chip.setChipIconResource(if (categories.isEmpty()) R.drawable.ic_heart_outline else R.drawable.ic_heart)
-        chip.text = if (categories.isEmpty()) {
-            getString(R.string.add_to_favourites)
-        } else {
-            categories.joinToStringWithLimit(this, FAV_LABEL_LIMIT) { it.title }
-        }
-    }
+	override fun onItemClick(item: Bookmark, view: View) {
+		router.openReader(ReaderIntent.Builder(view.context).bookmark(item).incognito().build())
+		Toast.makeText(view.context, R.string.incognito_mode, Toast.LENGTH_SHORT).show()
+	}
 
-    private fun onLocalSizeChanged(size: Long) {
-        if (size == 0L) {
-            infoBinding.textViewLocal.isVisible = false
-            infoBinding.textViewLocalLabel.isVisible = false
-        } else {
-            infoBinding.textViewLocal.text = FileSize.BYTES.format(this, size)
-            infoBinding.textViewLocal.isVisible = true
-            infoBinding.textViewLocalLabel.isVisible = true
-        }
-    }
+	override fun onRefresh() {
+		viewModel.reload()
+	}
 
-    private fun onRelatedMangaChanged(related: List<MangaListModel>) {
-        if (related.isEmpty()) {
-            viewBinding.groupRelated.isVisible = false
-            return
-        }
-        val rv = viewBinding.recyclerViewRelated
+	override fun onDraw() {
+		viewBinding.run {
+			buttonDescriptionMore.isVisible = textViewDescription.maxLines == Int.MAX_VALUE ||
+				textViewDescription.isTextTruncated
+		}
+	}
 
-        @Suppress("UNCHECKED_CAST")
-        val adapter = (rv.adapter as? BaseListAdapter<ListModel>) ?: BaseListAdapter<ListModel>()
-            .addDelegate(
-                ListItemType.MANGA_GRID,
-                mangaGridItemAD(
-                    sizeResolver = StaticItemSizeResolver(resources.getDimensionPixelSize(R.dimen.smaller_grid_width)),
-                ) { item, view ->
-                    router.openDetails(item.toMangaWithOverride())
-                },
-            ).also { rv.adapter = it }
-        adapter.items = related
-        viewBinding.groupRelated.isVisible = true
-    }
+	override fun onLayoutChange(
+		v: View?,
+		left: Int,
+		top: Int,
+		right: Int,
+		bottom: Int,
+		oldLeft: Int,
+		oldTop: Int,
+		oldRight: Int,
+		oldBottom: Int
+	) {
+		with(viewBinding) {
+			containerBottomSheet?.let { sheet ->
+				val peekHeight = BottomSheetBehavior.from(sheet).peekHeight
+				if (scrollView.paddingBottom != peekHeight) {
+					scrollView.updatePadding(bottom = peekHeight)
+				}
+			}
+		}
+	}
 
-    private fun onLoadingStateChanged(isLoading: Boolean) {
-        viewBinding.swipeRefreshLayout.isRefreshing = isLoading
-    }
+	override fun onApplyWindowInsets(v: View, insets: WindowInsetsCompat): WindowInsetsCompat {
+		val typeMask = WindowInsetsCompat.Type.systemBars()
+		val barsInsets = insets.getInsets(typeMask)
+		if (viewBinding.cardChapters != null) {
+			// landscape
+			viewBinding.cardChapters?.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+				topMargin = barsInsets.top + resources.getDimensionPixelOffset(R.dimen.grid_spacing_outer)
+				marginEnd = barsInsets.end(v) + resources.getDimensionPixelOffset(R.dimen.side_card_offset)
+				bottomMargin = barsInsets.bottom + resources.getDimensionPixelOffset(R.dimen.side_card_offset)
+			}
+			viewBinding.scrollView.updatePaddingRelative(
+				bottom = barsInsets.bottom,
+				start = barsInsets.start(v),
+			)
+			viewBinding.appbar.updatePaddingRelative(
+				start = barsInsets.start(v),
+			)
+			return insets.consume(v, typeMask, bottom = true, end = true)
+		} else {
+			viewBinding.navbarDim?.updateLayoutParams {
+				height = barsInsets.bottom
+			}
+			return insets
+		}
+	}
 
-    private fun onScrobblingInfoChanged(scrobblings: List<ScrobblingInfo>) {
-        var adapter = viewBinding.recyclerViewScrobbling.adapter as? ScrollingInfoAdapter
-        viewBinding.groupScrobbling.isGone = scrobblings.isEmpty()
-        if (adapter != null) {
-            adapter.items = scrobblings
-        } else {
-            adapter = ScrollingInfoAdapter(router)
-            adapter.items = scrobblings
-            viewBinding.recyclerViewScrobbling.adapter = adapter
-            viewBinding.recyclerViewScrobbling.addItemDecoration(ScrobblingItemDecoration())
-        }
-    }
+	private fun onFavoritesChanged(categories: Set<FavouriteCategory>) {
+		val chip = viewBinding.chipFavorite
+		chip.setChipIconResource(if (categories.isEmpty()) R.drawable.ic_heart_outline else R.drawable.ic_heart)
+		chip.text = if (categories.isEmpty()) {
+			getString(R.string.add_to_favourites)
+		} else {
+			categories.joinToStringWithLimit(this, FAV_LABEL_LIMIT) { it.title }
+		}
+	}
 
-    private fun onMangaUpdated(details: MangaDetails) {
-        val manga = details.toManga()
-        with(viewBinding) {
-            textViewTitle.text = manga.title
-            textViewSubtitle.textAndVisible = manga.altTitles.joinToString("\n")
-            textViewNsfw16.isVisible = manga.contentRating == ContentRating.SUGGESTIVE
-            textViewNsfw18.isVisible = manga.contentRating == ContentRating.ADULT
-            textViewDescription.text = details.description.ifNullOrEmpty { getString(R.string.no_description) }
-        }
-        with(infoBinding) {
-            val translation = details.getLocale()
-            infoBinding.textViewTranslation.textAndVisible = translation?.getDisplayLanguage(translation)
-                ?.toTitleCase(translation)
-            infoBinding.textViewTranslation.drawableStart = translation?.let {
-                LocaleUtils.getEmojiFlag(it)
-            }?.let {
-                TextDrawable.compound(infoBinding.textViewTranslation, it)
-            }
-            infoBinding.textViewTranslationLabel.isVisible = infoBinding.textViewTranslation.isVisible
-            textViewAuthor.textAndVisible = manga.getAuthorsString()
-            textViewAuthorLabel.isVisible = textViewAuthor.isVisible
-            if (manga.hasRating) {
-                ratingBarRating.rating = manga.rating * ratingBarRating.numStars
-                ratingBarRating.isVisible = true
-                textViewRatingLabel.isVisible = true
-            } else {
-                ratingBarRating.isVisible = false
-                textViewRatingLabel.isVisible = false
-            }
-            manga.state?.let { state ->
-                textViewState.textAndVisible = resources.getString(state.titleResId)
-                textViewStateLabel.isVisible = textViewState.isVisible
-            } ?: run {
-                textViewState.isVisible = false
-                textViewStateLabel.isVisible = false
-            }
-            if (manga.source == LocalMangaSource || manga.source == UnknownMangaSource) {
-                textViewSource.isVisible = false
-                textViewSourceLabel.isVisible = false
-            } else {
-                textViewSource.textAndVisible = manga.source.getTitle(this@DetailsActivity)
-                textViewSource.setTooltipCompat(manga.source.getSummary(this@DetailsActivity))
-                textViewSourceLabel.isVisible = textViewSource.isVisible == true
-            }
-            val faviconPlaceholderFactory = FaviconDrawable.Factory(R.style.FaviconDrawable_Chip)
-            ImageRequest.Builder(this@DetailsActivity)
-                .data(manga.source.faviconUri())
-                .lifecycle(this@DetailsActivity)
-                .crossfade(false)
-                .precision(Precision.EXACT)
-                .size(resources.getDimensionPixelSize(materialR.dimen.m3_chip_icon_size))
-                .target(TextViewTarget(textViewSource, Gravity.START))
-                .placeholder(faviconPlaceholderFactory)
-                .error(faviconPlaceholderFactory)
-                .fallback(faviconPlaceholderFactory)
-                .mangaSourceExtra(manga.source)
-                .transformations(RoundedCornersTransformation(resources.getDimension(R.dimen.chip_icon_corner)))
-                .allowRgb565(true)
-                .enqueueWith(coil)
-        }
-        title = manga.title
-        invalidateOptionsMenu()
-    }
+	private fun onLocalSizeChanged(size: Long) {
+		if (size == 0L) {
+			infoBinding.textViewLocal.isVisible = false
+			infoBinding.textViewLocalLabel.isVisible = false
+		} else {
+			infoBinding.textViewLocal.text = FileSize.BYTES.format(this, size)
+			infoBinding.textViewLocal.isVisible = true
+			infoBinding.textViewLocalLabel.isVisible = true
+		}
+	}
 
-    private fun onMangaRemoved(manga: Manga) {
-        Toast.makeText(
-            this,
-            getString(R.string._s_deleted_from_local_storage, manga.title),
-            Toast.LENGTH_SHORT,
-        ).show()
-        finishAfterTransition()
-    }
+	private fun onRelatedMangaChanged(related: List<MangaListModel>) {
+		if (related.isEmpty()) {
+			viewBinding.groupRelated.isVisible = false
+			return
+		}
+		val rv = viewBinding.recyclerViewRelated
 
-    private fun onHistoryChanged(info: HistoryInfo, isLoading: Boolean) = with(infoBinding) {
-        textViewChapters.text = when {
-            isLoading -> getString(R.string.loading_)
-            info.currentChapter >= 0 -> getString(
-                R.string.chapter_d_of_d,
-                info.currentChapter + 1,
-                info.totalChapters,
-            ).withEstimatedTime(info.estimatedTime)
-            info.totalChapters == 0 -> getString(R.string.no_chapters)
-            info.totalChapters == -1 -> getString(R.string.error_occurred)
-            else -> resources.getQuantityStringSafe(R.plurals.chapters, info.totalChapters, info.totalChapters)
-                .withEstimatedTime(info.estimatedTime)
-        }
-        textViewProgress.textAndVisible = if (info.percent <= 0f) {
-            null
-        } else {
-            val displayPercent = if (ReadingProgress.isCompleted(info.percent)) 100 else (info.percent * 100f).toInt()
-            getString(R.string.percent_string_pattern, displayPercent.toString())
-        }
-        progress.setProgressCompat(
-            (progress.max * info.percent.coerceIn(0f, 1f)).roundToInt(),
-            true,
-        )
-        textViewProgressLabel.isVisible = info.history != null
-        textViewProgress.isVisible = info.history != null
-        progress.isVisible = info.history != null
-    }
+		@Suppress("UNCHECKED_CAST")
+		val adapter = (rv.adapter as? BaseListAdapter<ListModel>) ?: BaseListAdapter<ListModel>()
+			.addDelegate(
+				ListItemType.MANGA_GRID,
+				mangaGridItemAD(
+					sizeResolver = StaticItemSizeResolver(resources.getDimensionPixelSize(R.dimen.smaller_grid_width)),
+				) { item, view ->
+					router.openDetails(item.toMangaWithOverride())
+				},
+			).also { rv.adapter = it }
+		adapter.items = related
+		viewBinding.groupRelated.isVisible = true
+	}
 
-    private fun onTagsChanged(tags: Collection<ChipsView.ChipModel>) {
-        viewBinding.chipsTags.isVisible = tags.isNotEmpty()
-        viewBinding.chipsTags.setChips(tags)
-    }
+	private fun onLoadingStateChanged(isLoading: Boolean) {
+		viewBinding.swipeRefreshLayout.isRefreshing = isLoading
+	}
 
-    // =============================================
-    // PANORAMA BACKGROUND
-    // =============================================
-    private fun loadCover(imageUrl: String?) {
-        // Load cover utama (tidak berubah)
-        viewBinding.imageViewCover.setImageAsync(imageUrl, viewModel.getMangaOrNull())
+	private fun onScrobblingInfoChanged(scrobblings: List<ScrobblingInfo>) {
+		var adapter = viewBinding.recyclerViewScrobbling.adapter as? ScrollingInfoAdapter
+		viewBinding.groupScrobbling.isGone = scrobblings.isEmpty()
+		if (adapter != null) {
+			adapter.items = scrobblings
+		} else {
+			adapter = ScrollingInfoAdapter(router)
+			adapter.items = scrobblings
+			viewBinding.recyclerViewScrobbling.adapter = adapter
+			viewBinding.recyclerViewScrobbling.addItemDecoration(ScrobblingItemDecoration())
+		}
+	}
 
 	private fun onMangaUpdated(details: MangaDetails) {
 		val manga = details.toManga()
@@ -583,102 +471,77 @@ class DetailsActivity :
 				textViewStateLabel.isVisible = false
 			}
 
-        if (imageUrl == null) {
-            hidePanorama(panorama)
-            return
-        }
+			if (manga.source == LocalMangaSource || manga.source == UnknownMangaSource) {
+				textViewSource.isVisible = false
+				textViewSourceLabel.isVisible = false
+			} else {
+				textViewSource.textAndVisible = manga.source.getTitle(this@DetailsActivity)
+				textViewSource.setTooltipCompat(manga.source.getSummary(this@DetailsActivity))
+				textViewSourceLabel.isVisible = textViewSource.isVisible == true
+			}
+			val faviconPlaceholderFactory = FaviconDrawable.Factory(R.style.FaviconDrawable_Chip)
+			ImageRequest.Builder(this@DetailsActivity)
+				.data(manga.source.faviconUri())
+				.lifecycle(this@DetailsActivity)
+				.crossfade(false)
+				.precision(Precision.EXACT)
+				.size(resources.getDimensionPixelSize(materialR.dimen.m3_chip_icon_size))
+				.target(TextViewTarget(textViewSource, Gravity.START))
+				.placeholder(faviconPlaceholderFactory)
+				.error(faviconPlaceholderFactory)
+				.fallback(faviconPlaceholderFactory)
+				.mangaSourceExtra(manga.source)
+				.transformations(RoundedCornersTransformation(resources.getDimension(R.dimen.chip_icon_corner)))
+				.allowRgb565(true)
+				.enqueueWith(coil)
+		}
+		title = manga.title
+		invalidateOptionsMenu()
+	}
 
-        // Load gambar kecil untuk panorama background dengan blur
-        ImageRequest.Builder(this)
-            .data(imageUrl)
-            .lifecycle(this)
-            .crossfade(true)
-            .allowRgb565(false)
-            .size(300) // ukuran kecil agar blur lebih cepat
-            .target(
-                onSuccess = { image ->
-                    try {
-                        val bitmap = image.toBitmap()
-                        val blurred = blurBitmap(bitmap)
-                        panorama.setImageBitmap(blurred)
-                        panorama.scaleType = ImageView.ScaleType.CENTER_CROP
-                        panorama.isVisible = true
-                        viewBinding.viewPanoramaScrim?.isVisible = true
-                        viewBinding.viewPanoramaBottomGradient?.isVisible = true
-                    } catch (e: Exception) {
-                        panorama.setImageBitmap(image.toBitmap())
-                        panorama.isVisible = true
-                        viewBinding.viewPanoramaScrim?.isVisible = true
-                        viewBinding.viewPanoramaBottomGradient?.isVisible = true
-                    }
-                },
-                onError = { hidePanorama(panorama) }
-            )
-            .enqueueWith(coil)
-    }
+	private fun onMangaRemoved(manga: Manga) {
+		Toast.makeText(
+			this,
+			getString(R.string._s_deleted_from_local_storage, manga.title),
+			Toast.LENGTH_SHORT,
+		).show()
+		finishAfterTransition()
+	}
 
-    /**
-     * Blur bitmap:
-     * - API 31+ : BlurMaskFilter via software Canvas
-     * - API 23-30 : RenderScript (deprecated tapi masih jalan)
-     */
-    @Suppress("DEPRECATION")
-    private fun blurBitmap(source: Bitmap): Bitmap {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            // API 31+ — BlurMaskFilter via software canvas
-            val output = Bitmap.createBitmap(source.width, source.height, Bitmap.Config.ARGB_8888)
-            val canvas = Canvas(output)
-            val paint = Paint().apply {
-                maskFilter = BlurMaskFilter(40f, BlurMaskFilter.Blur.NORMAL)
-            }
-            canvas.drawBitmap(source, 0f, 0f, paint)
-            output
-        } else {
-            // API 23-30 — RenderScript
-            try {
-                val rs = RenderScript.create(this)
-                val input = Allocation.createFromBitmap(rs, source)
-                val output = Allocation.createTyped(rs, input.type)
-                val script = ScriptIntrinsicBlur.create(rs, Element.U8_4(rs))
-                script.setRadius(20f) // max 25f
-                script.setInput(input)
-                script.forEach(output)
-                val blurred = Bitmap.createBitmap(
-                    source.width, source.height,
-                    source.config ?: Bitmap.Config.ARGB_8888
-                )
-                output.copyTo(blurred)
-                rs.destroy()
-                blurred
-            } catch (e: Exception) {
-                source // fallback tanpa blur jika RenderScript gagal
-            }
-        }
-    }
+	private fun onHistoryChanged(info: HistoryInfo, isLoading: Boolean) = with(infoBinding) {
+		textViewChapters.text = when {
+			isLoading -> getString(R.string.loading_)
+			info.currentChapter >= 0 -> getString(
+				R.string.chapter_d_of_d,
+				info.currentChapter + 1,
+				info.totalChapters,
+			).withEstimatedTime(info.estimatedTime)
 
-    private fun hidePanorama(panorama: ImageView) {
-        panorama.isVisible = false
-        viewBinding.viewPanoramaScrim?.isVisible = false
-        viewBinding.viewPanoramaBottomGradient?.isVisible = false
-    }
+			info.totalChapters == 0 -> getString(R.string.no_chapters)
+			info.totalChapters == -1 -> getString(R.string.error_occurred)
+			else -> resources.getQuantityStringSafe(R.plurals.chapters, info.totalChapters, info.totalChapters)
+				.withEstimatedTime(info.estimatedTime)
+		}
+		textViewProgress.textAndVisible = if (info.percent <= 0f) {
+			null
+		} else {
+			val displayPercent = if (ReadingProgress.isCompleted(info.percent)) 100 else (info.percent * 100f).toInt()
+			getString(R.string.percent_string_pattern, displayPercent.toString())
+		}
 
-    private fun String.withEstimatedTime(time: ReadingTime?): String {
-        if (time == null) return this
-        val timeFormatted = time.formatShort(resources)
-        return getString(R.string.chapters_time_pattern, this, timeFormatted)
-    }
+		progress.setProgressCompat(
+			(progress.max * info.percent.coerceIn(0f, 1f)).roundToInt(),
+			true,
+		)
+		textViewProgressLabel.isVisible = info.history != null
+		textViewProgress.isVisible = info.history != null
+		progress.isVisible = info.history != null
+	}
 
-    private fun Manga.getAuthorsString(): SpannedString? {
-        if (authors.isEmpty()) return null
-        return buildSpannedString {
-            authors.forEach { a ->
-                if (a.isNotEmpty()) {
-                    if (isNotEmpty()) append(", ")
-                    inSpans(AuthorSpan(this@DetailsActivity)) { append(a) }
-                }
-            }
-        }.nullIfEmpty()
-    }
+	private fun onTagsChanged(tags: Collection<ChipsView.ChipModel>) {
+		viewBinding.chipsTags.isVisible = tags.isNotEmpty()
+		viewBinding.chipsTags.setChips(tags)
+	}
 
 	private fun loadCover(imageUrl: String?) {
 		viewBinding.imageViewCover.setImageAsync(imageUrl, viewModel.getMangaOrNull())
@@ -724,17 +587,31 @@ class DetailsActivity :
 		viewBinding.toolbar.setBackgroundColor(Color.TRANSPARENT)
 	}
 
-        private var isCalled = false
+	private fun String.withEstimatedTime(time: ReadingTime?): String {
+		if (time == null) {
+			return this
+		}
+		val timeFormatted = time.formatShort(resources)
+		return getString(R.string.chapters_time_pattern, this, timeFormatted)
+	}
 
-        override suspend fun emit(value: List<ChapterListItem>?) {
-            if (value.isNullOrEmpty()) return
-            if (!isCalled) {
-                isCalled = true
-                val item = value.find { it.isCurrent } ?: value.first()
-                MangaPrefetchService.prefetchPages(context, item.chapter)
-            }
-        }
-    }
+	private fun Manga.getAuthorsString(): SpannedString? {
+		if (authors.isEmpty()) {
+			return null
+		}
+		return buildSpannedString {
+			authors.forEach { a ->
+				if (a.isNotEmpty()) {
+					if (isNotEmpty()) {
+						append(", ")
+					}
+					inSpans(AuthorSpan(this@DetailsActivity)) {
+						append(a)
+					}
+				}
+			}
+		}.nullIfEmpty()
+	}
 
 	private class PrefetchObserver(
 		private val context: Context,

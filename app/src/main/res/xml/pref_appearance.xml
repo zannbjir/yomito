@@ -136,14 +136,6 @@
         
         <SwitchPreferenceCompat
             android:defaultValue="false"
-            android:key="pref_text_inside_cover"
-            android:summary="@string/text_inside_cover_summary"
-            android:title="@string/text_inside_cover_title" />
-
-
-
-        <SwitchPreferenceCompat
-            android:defaultValue="false"
             android:icon="@drawable/ic_pin"
             android:key="nav_pinned"
             android:summary="@string/pin_navigation_ui_summary"

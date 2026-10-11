@@ -1,0 +1,63 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+	<!-- Judul di BAWAH sampul. Dipakai tema biasa. -->
+	<style name="Widget.Kotatsu.MangaGridTitle" parent="">
+		<item name="android:elegantTextHeight">false</item>
+		<item name="android:includeFontPadding">false</item>
+		<item name="android:ellipsize">end</item>
+		<item name="android:lines">2</item>
+		<item name="android:paddingVertical">4dp</item>
+		<item name="android:textAppearance">?attr/gridTitleTextAppearance</item>
+		<item name="android:textColor">?android:attr/textColorPrimary</item>
+		<item name="android:visibility">visible</item>
+	</style>
+	<style name="Widget.Kotatsu.MangaGridTitle.Hidden">
+		<item name="android:visibility">gone</item>
+	</style>
+	<!--
+		Judul di ATAS sampul. Default GONE; hanya tema yang memilihnya yang
+		menampilkannya (lihat Widget.Kotatsu.MangaCoverTitle.Visible).
+		maxLines, bukan lines: kotak dua baris tetap memesan tinggi walau judulnya
+		satu baris, dan itu membuat judul pendek terangkat dari bawah sampul.
+	-->
+	<style name="Widget.Kotatsu.MangaCoverTitle" parent="">
+		<item name="android:elegantTextHeight">false</item>
+		<item name="android:includeFontPadding">false</item>
+		<item name="android:shadowColor">#B3000000</item>
+		<item name="android:shadowDx">0</item>
+		<item name="android:shadowDy">1</item>
+		<item name="android:shadowRadius">3</item>
+		<item name="android:ellipsize">end</item>
+		<item name="android:maxLines">2</item>
+		<item name="android:textAppearance">?attr/gridTitleTextAppearance</item>
+		<item name="android:visibility">gone</item>
+	</style>
+	<style name="Widget.Kotatsu.MangaCoverTitle.Visible">
+		<item name="android:visibility">visible</item>
+	</style>
+	<!--
+		Judul di atas sampul, versi ekspresif.
+		CATATAN PENTING: Kotatsu memakai @font/google_sans_bold. Yomito TIDAK punya
+		folder res/font sama sekali, jadi di sini dipakai font sistem Android
+		(sans-serif tebal) supaya tidak perlu menyalin file font.
+		Kalau kamu mau persis Kotatsu: salin
+		  Kotatsu-Redo/app/src/main/res/font/google_sans_bold.xml
+		  Kotatsu-Redo/app/src/main/res/font/google_sans.ttf
+		ke  yomito/app/src/main/res/font/ , lalu ganti baris fontFamily
+		di bawah menjadi @font/google_sans_bold.
+	-->
+	<style name="TextAppearance.Kotatsu.GridTitle.OnCover" parent="TextAppearance.Material3.TitleSmall">
+		<item name="fontFamily">sans-serif-black</item>
+		<item name="android:fontFamily">sans-serif-black</item>
+		<item name="android:textColor">@android:color/white</item>
+		<item name="android:letterSpacing">0</item>
+		<item name="android:shadowColor">#B3000000</item>
+		<item name="android:shadowDx">0</item>
+		<item name="android:shadowDy">1</item>
+		<item name="android:shadowRadius">3</item>
+	</style>
+	<style name="TextAppearance.Kotatsu.GridTitle.OnCover.Small">
+		<item name="android:textSize">12sp</item>
+		<item name="lineHeight">14sp</item>
+		<item name="android:lineHeight" tools:ignore="NewApi">14sp</item>
+	</style>
+</resources>

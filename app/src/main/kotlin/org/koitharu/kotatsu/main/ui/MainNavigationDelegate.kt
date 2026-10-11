@@ -155,20 +155,19 @@ class MainNavigationDelegate(
 	}
 
 	private fun setCounter(@IdRes id: Int, counter: Int) {
-		// The Compose face draws its own badges; the MenuItem ones only show in legacy mode.
-		(navBar as? FloatingBottomNavigationView)?.setComposeBadge(id, counter)
-		if (counter == 0) {
-			navBar.getBadge(id)?.isVisible = false
-		} else {
-			val badge = navBar.getOrCreateBadge(id)
-			if (counter < 0) {
-				badge.clearNumber()
-			} else {
-				badge.number = counter
-			}
-			badge.isVisible = true
-		}
-	}
+    (navBar as? FloatingBottomNavigationView)?.setComposeBadge(id, counter)
+    if (counter == 0) {
+        navBar.getBadge(id)?.isVisible = false
+    } else {
+        val badge = navBar.getOrCreateBadge(id)
+        if (counter < 0) {
+            badge.clearNumber()
+        } else {
+            badge.number = counter
+        }
+        badge.isVisible = true
+    }
+}
 
 	fun setItemVisibility(@IdRes itemId: Int, isVisible: Boolean) {
 		val item = navBar.menu.findItem(itemId) ?: return
@@ -259,32 +258,29 @@ class MainNavigationDelegate(
 		return fragmentManager.fragmentFactory.instantiate(classLoader, fragmentClass.name)
 	}
 
-	private fun observeSettings(lifecycleOwner: LifecycleOwner) {
-		settings.observe(
-			AppSettings.KEY_TRACKER_ENABLED,
-			AppSettings.KEY_SUGGESTIONS,
-			AppSettings.KEY_NAV_LABELS,
-			AppSettings.KEY_FLOATING_NAV,
-		).onEach {
-				setItemVisibility(R.id.nav_suggestions, settings.isSuggestionsEnabled)
-				setItemVisibility(R.id.nav_feed, settings.isTrackerEnabled)
-				val isFloating = settings.isFloatingNavBar
-				val isLabeled = settings.isNavLabelsVisible
-				if (navBar is FloatingBottomNavigationView) {
-					// The Compose face renders its own items, so it needs the menu contents pushed to
-					// it separately - the MenuItems themselves only drive the legacy fallback.
-					navBar.setUseLegacyNavigation(!isFloating)
-					navBar.setComposeItems(settings.mainNavItems)
-					navBar.setComposeLabeled(isLabeled)
-					navBar.setComposeItemVisibility(R.id.nav_suggestions, settings.isSuggestionsEnabled)
-					navBar.setComposeItemVisibility(R.id.nav_feed, settings.isTrackerEnabled)
-				}
-				// The floating pill is a bottom-bar concept; the rail on large screens ignores it.
-				setNavbarIsLabeled(
-					value = if (isFloating && navBar !is FloatingBottomNavigationView) false else isLabeled,
-				)
-			}.launchIn(lifecycleOwner.lifecycleScope)
-	}
+private fun observeSettings(lifecycleOwner: LifecycleOwner) {
+    settings.observe(
+        AppSettings.KEY_TRACKER_ENABLED,
+        AppSettings.KEY_SUGGESTIONS,
+        AppSettings.KEY_NAV_LABELS,
+        AppSettings.KEY_FLOATING_NAV,
+    ).onEach {
+            setItemVisibility(R.id.nav_suggestions, settings.isSuggestionsEnabled)
+            setItemVisibility(R.id.nav_feed, settings.isTrackerEnabled)
+            val isFloating = settings.isFloatingNavBar
+            val isLabeled = settings.isNavLabelsVisible
+            if (navBar is FloatingBottomNavigationView) {
+                navBar.setUseLegacyNavigation(!isFloating)
+                navBar.setComposeItems(settings.mainNavItems)
+                navBar.setComposeLabeled(isLabeled)
+                navBar.setComposeItemVisibility(R.id.nav_suggestions, settings.isSuggestionsEnabled)
+                navBar.setComposeItemVisibility(R.id.nav_feed, settings.isTrackerEnabled)
+            }
+            setNavbarIsLabeled(
+                value = if (isFloating && navBar !is FloatingBottomNavigationView) false else isLabeled,
+            )
+        }.launchIn(lifecycleOwner.lifecycleScope)
+}
 
 	private fun firstItem(): MenuItem? {
 		val menu = navBar.menu

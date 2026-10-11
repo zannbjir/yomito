@@ -100,6 +100,12 @@
 		<item name="listItemTextViewStyle">@style/Widget.Kotatsu.ListItemTextView</item>
 		<item name="dotIndicatorStyle">@style/Widget.Kotatsu.DotIndicator</item>
 		<item name="badgeViewStyle">@style/Widget.Kotatsu.BadgeView</item>
+		<item name="mangaGridTitleStyle">@style/Widget.Kotatsu.MangaGridTitle</item>
+		<item name="mangaCoverTitleStyle">@style/Widget.Kotatsu.MangaCoverTitle</item>
+		<item name="gridTitleTextAppearance">@style/TextAppearance.Kotatsu.GridTitle</item>
+		<item name="gridTitleTextAppearanceSmall">@style/TextAppearance.Kotatsu.GridTitle.Small</item>
+		<item name="readingProgressStyle">@style/ProgressDrawable</item>
+		<item name="mangaGridSpacing">@dimen/manga_grid_spacing</item>
 		<item name="coverImageViewStyle">@style/Widget.Kotatsu.ImageView.Cover</item>
 	</style>
 

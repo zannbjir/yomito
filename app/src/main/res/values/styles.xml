@@ -43,37 +43,6 @@
 		<item name="defaultMarginsEnabled">true</item>
 		<item name="adaptiveMaxWidthEnabled">false</item>
 	</style>
-<style name="Widget.Kotatsu.MangaGridTitle" parent="">
-		<item name="android:elegantTextHeight">false</item>
-		<item name="android:includeFontPadding">false</item>
-		<item name="android:ellipsize">end</item>
-		<item name="android:lines">2</item>
-		<item name="android:paddingVertical">4dp</item>
-		<item name="android:textAppearance">?attr/gridTitleTextAppearance</item>
-		<item name="android:textColor">?android:attr/textColorPrimary</item>
-		<item name="android:visibility">visible</item>
-	</style>
-<style name="Widget.Kotatsu.MangaGridTitle.Hidden">
-		<item name="android:visibility">gone</item>
-	</style>
-<style name="Widget.Kotatsu.MangaCoverTitle" parent="">
-		<item name="android:elegantTextHeight">false</item>
-		<!-- Google Sans carries tall ascent/descent metrics, and the default font padding adds more
-		     on top. Left on, a two-line title ends up with a band of empty space under it and drifts
-		     away from the bottom of the cover. -->
-		<item name="android:includeFontPadding">false</item>
-		<item name="android:shadowColor">#B3000000</item>
-		<item name="android:shadowDx">0</item>
-		<item name="android:shadowDy">1</item>
-		<item name="android:shadowRadius">3</item>
-		<item name="android:ellipsize">end</item>
-		<item name="android:maxLines">2</item>
-		<item name="android:textAppearance">?attr/gridTitleTextAppearance</item>
-		<item name="android:visibility">gone</item>
-	</style>
-<style name="Widget.Kotatsu.MangaCoverTitle.Visible">
-		<item name="android:visibility">visible</item>
-	</style>
 <style name="Widget.Kotatsu.CircularProgressIndicator" parent="Widget.Material3.CircularProgressIndicator">
 		<item name="trackCornerRadius">@dimen/mtrl_progress_indicator_full_rounded_corner_radius</item>
 	</style>
@@ -387,24 +356,7 @@
 		<item name="android:lineHeight" tools:ignore="NewApi">14sp</item>
 	</style>
 
-	<style name="TextAppearance.Kotatsu.GridTitle.OnCover" parent="TextAppearance.Material3.TitleSmall">
-		<item name="fontFamily">@font/google_sans_bold</item>
-		<item name="android:fontFamily">@font/google_sans_bold</item>
-		<item name="android:textColor">@android:color/white</item>
-		<item name="android:letterSpacing">0</item>
-		<item name="android:shadowColor">#B3000000</item>
-		<item name="android:shadowDx">0</item>
-		<item name="android:shadowDy">1</item>
-		<item name="android:shadowRadius">3</item>
-	</style>
-
-	<style name="TextAppearance.Kotatsu.GridTitle.OnCover.Small">
-		<item name="android:textSize">12sp</item>
-		<item name="lineHeight">14sp</item>
-		<item name="android:lineHeight" tools:ignore="NewApi">14sp</item>
-	</style>
-
-	<style name="TextAppearance.Kotatsu.Shadowed" parent="TextAppearance.Material3.LabelLarge">
+<style name="TextAppearance.Kotatsu.Shadowed" parent="TextAppearance.Material3.LabelLarge">
 		<item name="fontFamily">@font/google_sans_bold</item>
 		<item name="android:fontFamily">@font/google_sans_bold</item>
 		<item name="android:shadowColor">#80000000</item>

@@ -12,7 +12,6 @@ plugins {
 	id 'io.sentry.android.gradle'
 }
 
-// Reads a credential from local.properties, falling back to an environment variable for CI.
 def readSecret = { String fileKey, String envKey ->
 	def props = new Properties()
 	def file = rootProject.file('local.properties')
@@ -38,7 +37,7 @@ android {
 	}
 
 	defaultConfig {
-		applicationId 'io.github.arus.kotatsu'
+		applicationId 'io.github.maru.kotatsu'
 		minSdk = 23
 		targetSdk = 37
 		versionCode = 1095
