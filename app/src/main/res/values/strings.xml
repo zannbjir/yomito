@@ -582,6 +582,7 @@ Optional — skip it and you appear as anon.</string>
 <string name="community_sponsor_reports">Reports are posted on the Discord.</string>
 <string name="community_sponsor_open">Become a sponsor</string>
 <string name="community_sponsor_dismiss">Maybe later</string>
+<string name="community_sponsor_thanks">Thank you! Your support helps keep Yomito and Kotatsu-Redo going.</string>
 <string name="categories">Categories</string>
 <string name="online_variant">Online variant</string>
 <string name="periodic_backups">Periodic backups</string>
