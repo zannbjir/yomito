@@ -11,8 +11,13 @@ on:
                 options:
                     - release
                     - nightly
+            publish:
+                description: "Publish ke GitHub Release? (kalau Tidak, cuma jadi artifact untuk tes)"
+                required: true
+                type: boolean
+                default: false
             version:
-                description: "Versi Stable (contoh: 9.3)"
+                description: "Versi Stable (contoh: 9.3) - hanya dipakai kalau Publish = Ya"
                 required: false
             description:
                 description: "Deskripsi release"
@@ -21,12 +26,12 @@ on:
                 description: "Kirim notifikasi ke Discord?"
                 required: true
                 type: boolean
-                default: true
+                default: false
             notify_whatsapp:
                 description: "Kirim notifikasi ke WhatsApp?"
                 required: true
                 type: boolean
-                default: true
+                default: false
 
 jobs:
     build:
@@ -54,16 +59,17 @@ jobs:
                     echo "tag=nightly-${DATE}" >> $GITHUB_OUTPUT
                     echo "name=Nightly ${DATE}" >> $GITHUB_OUTPUT
                     echo "version=${DATE}" >> $GITHUB_OUTPUT
-                    echo "apk_name=nightly-app-release.apk" >> $GITHUB_OUTPUT
+                    echo "apk_name=yomito-nightly-${DATE}.apk" >> $GITHUB_OUTPUT
                     echo "notif_title=🌙 Yomito Beta Update Available!" >> $GITHUB_OUTPUT
                     echo "body_title=🌙 Yomito Beta Release" >> $GITHUB_OUTPUT
                     echo "target_repo=zannbjir/yomito-malam" >> $GITHUB_OUTPUT
                   else
                     VER="${{ github.event.inputs.version }}"
+                    [ -z "$VER" ] && VER="$(TZ=Asia/Jakarta date +'%d%m%Y')"
                     echo "tag=v${VER}" >> $GITHUB_OUTPUT
                     echo "name=Stable v${VER}" >> $GITHUB_OUTPUT
                     echo "version=v${VER}" >> $GITHUB_OUTPUT
-                    echo "apk_name=stable-app-release.apk" >> $GITHUB_OUTPUT
+                    echo "apk_name=yomito-stable-${VER}.apk" >> $GITHUB_OUTPUT
                     echo "notif_title=🚀 Yomito Stable Update Available!" >> $GITHUB_OUTPUT
                     echo "body_title=🚀 Yomito Stable Release" >> $GITHUB_OUTPUT
                     echo "target_repo=${{ github.repository }}" >> $GITHUB_OUTPUT
@@ -74,32 +80,39 @@ jobs:
               id: desc
               run: |
                   RAW="${{ github.event.inputs.description }}"
-                  FORMATTED=$(echo "$RAW" | sed 's/ - /\n- /g' | sed 's/^- //g' | sed 's/^/- /' | sed 's/- \([a-z]\)/- \U\1/g')
+                  FORMATTED=$(printf '%s' "$RAW" | sed 's/ - /\n- /g' | sed 's/^- //g' | sed 's/^/- /' | sed 's/- \([a-z]\)/- \U\1/g')
 
                   echo "text<<EOF" >> $GITHUB_OUTPUT
                   echo "$FORMATTED" >> $GITHUB_OUTPUT
                   echo "EOF" >> $GITHUB_OUTPUT
 
-                  JSON_SAFE=$(echo "$FORMATTED" | perl -pe 's/\n/\\n/g' | sed 's/\\n$//')
+                  JSON_SAFE=$(printf '%s' "$FORMATTED" | perl -pe 's/\n/\\n/g' | sed 's/\\n$//')
                   echo "json_safe=$JSON_SAFE" >> $GITHUB_OUTPUT
 
             # 🔨 BUILD & RENAME APK
             - name: Build & Rename APK
               run: |
-                  # Bikin foldernya dulu biar gak error pas dipindah
-                  mkdir -p app/build/outputs/apk/release
+                  set -e
 
                   if [ "${{ github.event.inputs.type }}" = "nightly" ]; then
                     ./gradlew assembleNightly
-                    # Cari file APK di folder nightly, apa pun namanya, lalu pindahkan
-                    APK_PATH=$(find app/build/outputs/apk/nightly -name "*.apk" | head -n 1)
-                    mv "$APK_PATH" app/build/outputs/apk/release/${{ steps.info.outputs.apk_name }}
+                    SRC_DIR="app/build/outputs/apk/nightly"
                   else
                     ./gradlew assembleRelease
-                    # Cari file APK di folder release, apa pun namanya, lalu pindahkan
-                    APK_PATH=$(find app/build/outputs/apk/release -name "*.apk" | head -n 1)
-                    mv "$APK_PATH" app/build/outputs/apk/release/${{ steps.info.outputs.apk_name }}
+                    SRC_DIR="app/build/outputs/apk/release"
                   fi
+
+                  APK_PATH=$(find "$SRC_DIR" -name "*.apk" ! -name "*-unsigned*" | head -n 1)
+                  if [ -z "$APK_PATH" ]; then
+                    echo "APK tidak ditemukan di $SRC_DIR"
+                    find app/build/outputs -name "*.apk" -print
+                    exit 1
+                  fi
+                  echo "APK asli: $APK_PATH"
+
+                  mkdir -p dist
+                  cp "$APK_PATH" "dist/${{ steps.info.outputs.apk_name }}"
+                  ls -lh dist/
               env:
                   KEYSTORE_FILE: release.keystore
                   KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
@@ -110,23 +123,61 @@ jobs:
             - name: Get APK Info
               id: apk
               run: |
-                  SIZE=$(du -h app/build/outputs/apk/release/${{ steps.info.outputs.apk_name }} | cut -f1)
+                  SIZE=$(du -h "dist/${{ steps.info.outputs.apk_name }}" | cut -f1)
                   DATE=$(TZ=Asia/Jakarta date +"%d %b %Y - %H:%M WIB")
                   echo "size=$SIZE" >> $GITHUB_OUTPUT
                   echo "date=$DATE" >> $GITHUB_OUTPUT
 
+            # 📤 ARTIFACT (selalu tersedia, tanpa publish)
+            - name: Upload Artifact
+              uses: actions/upload-artifact@v4
+              with:
+                  name: ${{ steps.info.outputs.apk_name }}
+                  path: dist/${{ steps.info.outputs.apk_name }}
+                  retention-days: 30
+
+            # 🔗 LINK DOWNLOAD (artifact, masa simpan 30 hari)
+            - name: Buat Link
+              id: short
+              run: |
+                  ART_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                  echo "url=$ART_URL" >> $GITHUB_OUTPUT
+                  {
+                    echo "### ✅ Build selesai"
+                    echo ""
+                    echo "**Tipe:** ${{ github.event.inputs.type }}"
+                    echo ""
+                    echo "**Versi:** ${{ steps.info.outputs.version }}"
+                    echo ""
+                    echo "**Ukuran APK:** ${{ steps.apk.outputs.size }}"
+                    echo ""
+                    echo "**Waktu:** ${{ steps.apk.outputs.date }}"
+                    echo ""
+                    if [ "${{ github.event.inputs.publish }}" = "true" ]; then
+                      echo "**Release:** https://github.com/${{ steps.info.outputs.target_repo }}/releases/tag/${{ steps.info.outputs.tag }}"
+                    else
+                      echo "**Publish:** ❌ Tidak (mode tes)"
+                      echo ""
+                      echo "⬇️ **Download APK:** buka halaman ini, scroll ke **Artifacts** di bawah, klik **${{ steps.info.outputs.apk_name }}**"
+                    fi
+                  } >> $GITHUB_STEP_SUMMARY
+
             # 📦 RELEASE BODY
             - name: Prepare Body
+              if: ${{ github.event.inputs.publish == 'true' }}
               run: |
-                  echo "${{ steps.info.outputs.body_title }}" > BODY.md
-                  echo "" >> BODY.md
-                  cat <<EOF >> BODY.md
-                  ${{ steps.desc.outputs.text }}
-                  EOF
+                  {
+                    echo "${{ steps.info.outputs.body_title }}"
+                    echo ""
+                    echo "${{ steps.desc.outputs.text }}"
+                    echo ""
+                    echo "📥 Download: https://yomito.foo.ng/download/"
+                  } > BODY.md
 
-            # 🚀 UPLOAD GITHUB RELEASE
+            # 🚀 UPLOAD GITHUB RELEASE (hanya kalau Publish = Ya)
             - name: Upload Release
               id: release
+              if: ${{ github.event.inputs.publish == 'true' }}
               uses: softprops/action-gh-release@v2
               with:
                   token: ${{ secrets.MY_GITHUB_TOKEN }}
@@ -135,17 +186,9 @@ jobs:
                   name: ${{ steps.info.outputs.name }}
                   body_path: BODY.md
                   prerelease: ${{ github.event.inputs.type == 'nightly' }}
-                  files: app/build/outputs/apk/release/${{ steps.info.outputs.apk_name }}
+                  files: dist/${{ steps.info.outputs.apk_name }}
 
-            # 🔗 SHORTLINK MANUAL
-            - name: ShortLink
-              id: short
-              run: |
-                  SHORT="https://yomito.foo.ng/download/"
-                  echo "url=$SHORT" >> $GITHUB_OUTPUT
-
-                       # 💬 DISCORD RELEASE NOTIFICATION
-                       
+            # 💬 DISCORD RELEASE NOTIFICATION
             - name: Discord Notify
               if: ${{ github.event.inputs.notify_discord == 'true' && success() }}
               run: |
@@ -157,14 +200,20 @@ jobs:
                     FOOTER="Stable release"
                   fi
 
-                  curl -X POST "$DISCORD_RELEASE_WEBHOOK" \
+                  if [ "${{ github.event.inputs.publish }}" = "true" ]; then
+                    LINK="https://github.com/${{ steps.info.outputs.target_repo }}/releases/tag/${{ steps.info.outputs.tag }}"
+                  else
+                    LINK="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                  fi
+
+                  curl -sS -X POST "$DISCORD_RELEASE_WEBHOOK" \
                     -H "Content-Type: application/json" \
                     -d @- <<EOF
                   {
                     "content": "$MENTION",
                     "embeds": [{
                       "title": "${{ steps.info.outputs.notif_title }}",
-                      "url": "https://github.com/${{ steps.info.outputs.target_repo }}/releases/tag/${{ steps.info.outputs.tag }}",
+                      "url": "$LINK",
                       "description": "${{ steps.desc.outputs.json_safe }}",
                       "color": 3447003,
                       "author": {
@@ -202,9 +251,15 @@ jobs:
             - name: WhatsApp Notify
               if: ${{ github.event.inputs.notify_whatsapp == 'true' && success() }}
               run: |
-                  MSG="*${{ steps.info.outputs.notif_title }}*\n\n📦 *Versi* : ${{ steps.info.outputs.version }}\n📏 *Ukuran* : ${{ steps.apk.outputs.size }}\n🕒 *Update* : ${{ steps.apk.outputs.date }}\n\n📝 *Changelog*:\n${{ steps.desc.outputs.json_safe }}\n\n⬇️ *Download*:\n${{ steps.short.outputs.url }}"
+                  if [ "${{ github.event.inputs.publish }}" = "true" ]; then
+                    LINK="https://github.com/${{ steps.info.outputs.target_repo }}/releases/tag/${{ steps.info.outputs.tag }}"
+                  else
+                    LINK="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                  fi
 
-                  curl -X POST https://api.fonnte.com/send \
+                  MSG="*${{ steps.info.outputs.notif_title }}*\n\n📦 *Versi* : ${{ steps.info.outputs.version }}\n📏 *Ukuran* : ${{ steps.apk.outputs.size }}\n🕒 *Update* : ${{ steps.apk.outputs.date }}\n\n📝 *Changelog*:\n${{ steps.desc.outputs.json_safe }}\n\n⬇️ *Download*:\n$LINK"
+
+                  curl -sS -X POST https://api.fonnte.com/send \
                     -H "Authorization: $FONNTE_TOKEN" \
                     -H "Content-Type: application/json" \
                     -d "{\"target\":\"$FONNTE_TARGET\",\"message\":\"$MSG\"}"
